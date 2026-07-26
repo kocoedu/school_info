@@ -202,7 +202,10 @@
 
                 <!-- Monthly Schedule Detail List -->
                 <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-stitch space-y-3">
-                    <h3 class="font-bold text-slate-900 text-sm">이번 달 상세 일정</h3>
+                    <div class="flex justify-between items-center">
+                        <h3 id="scheduleListHeaderTitle" class="font-bold text-slate-900 text-sm">이번 달 상세 일정</h3>
+                        <button id="clearDateSelectBtn" onclick="clearDateSelection()" class="text-xs text-[#0047FF] font-semibold hidden">전체보기</button>
+                    </div>
                     <div id="monthlyScheduleList" class="space-y-2 divide-y divide-slate-100">
                         <!-- Dynamic Events -->
                     </div>
@@ -324,6 +327,10 @@
         let weeklyMealData = [];
         let selectedMealDayIndex = 0; // 0: Mon, 1: Tue, 2: Wed, 3: Thu, 4: Fri
         let weekDatesList = [];
+
+        // Calendar Schedule State Variables
+        let selectedCalendarDate = null; // null or day number (1..31)
+        let currentMonthEvents = [];
 
         // Education Offices Code Data
         const eduOffices = [
@@ -738,7 +745,24 @@
 
         function changeMonth(delta) {
             currentDate.setMonth(currentDate.getMonth() + delta);
+            selectedCalendarDate = null;
             renderCalendar();
+        }
+
+        function clearDateSelection() {
+            selectedCalendarDate = null;
+            renderCalendarGridUI();
+            renderCalendarEventsList();
+        }
+
+        function selectCalendarDate(date) {
+            if (selectedCalendarDate === date) {
+                selectedCalendarDate = null; // Toggle selection off
+            } else {
+                selectedCalendarDate = date;
+            }
+            renderCalendarGridUI();
+            renderCalendarEventsList();
         }
 
         async function renderCalendar() {
@@ -749,22 +773,6 @@
             const firstDay = new Date(year, month, 1).getDay();
             const lastDate = new Date(year, month + 1, 0).getDate();
             
-            const grid = document.getElementById('calendarDaysGrid');
-            grid.innerHTML = '';
-
-            for (let i = 0; i < firstDay; i++) {
-                grid.innerHTML += `<div></div>`;
-            }
-
-            for (let date = 1; date <= lastDate; date++) {
-                const isToday = date === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear();
-                grid.innerHTML += `
-                    <div class="py-1.5 text-xs font-medium ${isToday ? 'bg-[#0047FF] text-white rounded-full font-bold' : 'text-slate-700'}">
-                        ${date}
-                    </div>
-                `;
-            }
-
             const fromYMD = `${year}${(month + 1).toString().padStart(2, '0')}01`;
             const toYMD = `${year}${(month + 1).toString().padStart(2, '0')}${lastDate}`;
             const listContainer = document.getElementById('monthlyScheduleList');
@@ -779,21 +787,93 @@
                 });
 
                 if (data.SchoolSchedule) {
-                    const events = data.SchoolSchedule[1].row;
-                    listContainer.innerHTML = events.map(e => `
-                        <div class="py-2.5 flex justify-between items-center text-xs">
-                            <div class="flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full bg-[#0047FF]"></span>
-                                <span class="font-medium text-slate-800">${e.EVENT_NM}</span>
-                            </div>
-                            <span class="text-[11px] text-slate-400 font-semibold">${e.AA_YMD.substring(4,6)}월 ${e.AA_YMD.substring(6,8)}일</span>
-                        </div>
-                    `).join('');
+                    currentMonthEvents = data.SchoolSchedule[1].row;
                 } else {
-                    listContainer.innerHTML = `<div class="text-center py-4 text-xs text-slate-400">이번 달 등록된 학사일정이 없습니다.</div>`;
+                    currentMonthEvents = [];
                 }
             } catch {
-                listContainer.innerHTML = `<div class="text-center py-4 text-xs text-red-400">일정을 불러오지 못했습니다.</div>`;
+                currentMonthEvents = [];
+            }
+
+            renderCalendarGridUI();
+            renderCalendarEventsList();
+        }
+
+        function renderCalendarGridUI() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+            
+            const grid = document.getElementById('calendarDaysGrid');
+            grid.innerHTML = '';
+
+            // Set of days that have scheduled events
+            const eventDates = new Set(currentMonthEvents.map(e => parseInt(e.AA_YMD.substring(6, 8), 10)));
+
+            for (let i = 0; i < firstDay; i++) {
+                grid.innerHTML += `<div></div>`;
+            }
+
+            const today = new Date();
+            const isCurrentMonthToday = today.getFullYear() === year && today.getMonth() === month;
+
+            for (let date = 1; date <= lastDate; date++) {
+                const isToday = isCurrentMonthToday && today.getDate() === date;
+                const isSelected = selectedCalendarDate === date;
+                const hasEvent = eventDates.has(date);
+
+                let btnStyle = "text-slate-700 hover:bg-slate-100";
+                if (isSelected) {
+                    btnStyle = "bg-[#0047FF] text-white font-bold shadow-md shadow-blue-600/30 scale-105";
+                } else if (isToday) {
+                    btnStyle = "bg-blue-50 text-[#0047FF] font-bold border border-blue-200";
+                }
+
+                grid.innerHTML += `
+                    <button onclick="selectCalendarDate(${date})" 
+                            class="py-1.5 flex flex-col items-center justify-center rounded-xl transition-all duration-150 cursor-pointer ${btnStyle}">
+                        <span>${date}</span>
+                        ${hasEvent ? `<span class="w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-[#0047FF]'} mt-0.5"></span>` : '<span class="w-1 h-1 mt-0.5"></span>'}
+                    </button>
+                `;
+            }
+        }
+
+        function renderCalendarEventsList() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const listContainer = document.getElementById('monthlyScheduleList');
+            const headerTitle = document.getElementById('scheduleListHeaderTitle');
+            const clearBtn = document.getElementById('clearDateSelectBtn');
+
+            let eventsToShow = currentMonthEvents;
+
+            if (selectedCalendarDate) {
+                const targetYMD = `${year}${(month + 1).toString().padStart(2, '0')}${selectedCalendarDate.toString().padStart(2, '0')}`;
+                eventsToShow = currentMonthEvents.filter(e => e.AA_YMD === targetYMD);
+                if (headerTitle) headerTitle.innerText = `${month + 1}월 ${selectedCalendarDate}일 상세 일정`;
+                if (clearBtn) clearBtn.classList.remove('hidden');
+            } else {
+                if (headerTitle) headerTitle.innerText = `이번 달 상세 일정`;
+                if (clearBtn) clearBtn.classList.add('hidden');
+            }
+
+            if (eventsToShow.length > 0) {
+                listContainer.innerHTML = eventsToShow.map(e => `
+                    <div class="py-2.5 flex justify-between items-center text-xs">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-[#0047FF]"></span>
+                            <span class="font-medium text-slate-800">${e.EVENT_NM}</span>
+                        </div>
+                        <span class="text-[11px] text-slate-400 font-semibold">${e.AA_YMD.substring(4,6)}월 ${e.AA_YMD.substring(6,8)}일</span>
+                    </div>
+                `).join('');
+            } else {
+                const emptyMsg = selectedCalendarDate 
+                    ? `${selectedCalendarDate}일에 등록된 학사일정이 없습니다.` 
+                    : `이번 달 등록된 학사일정이 없습니다.`;
+                listContainer.innerHTML = `<div class="text-center py-6 text-xs text-slate-400 font-medium">${emptyMsg}</div>`;
             }
         }
     </script>
