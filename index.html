@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>School Info Plus - 학교 정보 플러스</title>
+    
+    <!-- PWA & Mobile Optimization -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#1E3A8A">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            navy: '#0A192F',
+                            primary: '#1E3A8A',
+                            accent: '#2563EB',
+                            light: '#3B82F6',
+                            bg: '#F8FAFC',
+                            surface: '#FFFFFF',
+                            subtle: '#F1F5F9'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Pretendard', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'Roboto', 'sans-serif']
+                    },
+                    boxShadow: {
+                        'stitch': '0 4px 20px -2px rgba(30, 58, 138, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04)',
+                        'stitch-lg': '0 10px 25px -5px rgba(30, 58, 138, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.04)'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #F8FAFC;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .active-tab {
+            color: #1E3A8A;
+            font-weight: 700;
+        }
+        .active-tab i {
+            stroke-width: 2.5px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased bg-slate-50 flex justify-center min-h-screen">
+
+    <div class="w-full max-w-md bg-white min-h-screen flex flex-col shadow-2xl relative pb-20 border-x border-slate-100">
+        
+        <!-- HEADER -->
+        <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-100 px-5 py-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-900 to-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-900/20">
+                    <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-bold text-slate-900 leading-none">School Info<span class="text-blue-600">+</span></h1>
+                    <p id="headerSchoolSub" class="text-[11px] text-slate-400 font-medium mt-0.5">학교를 선택해주세요</p>
+                </div>
+            </div>
+            <button onclick="openSearchModal()" class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 active:scale-95 transition-transform">
+                <i data-lucide="search" class="w-4 h-4"></i>
+            </button>
+        </header>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 px-4 py-4 overflow-y-auto no-scrollbar space-y-5">
+            
+            <!-- VIEW 1: HOME DASHBOARD -->
+            <section id="view-home" class="space-y-5">
+                <!-- Selected School Info Banner Card -->
+                <div class="bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 text-white rounded-2xl p-5 shadow-stitch relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
+                    <div class="flex justify-between items-start mb-3">
+                        <span id="homeEduOfficeTag" class="px-2.5 py-1 bg-white/10 backdrop-blur-md rounded-lg text-xs font-medium text-blue-200 border border-white/10">교육청 미선택</span>
+                        <button onclick="openSearchModal()" class="text-xs text-blue-200 underline underline-offset-2 flex items-center gap-1">
+                            변경 <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                        </button>
+                    </div>
+                    <h2 id="homeSchoolName" class="text-xl font-bold mb-1">학교를 검색해 보세요</h2>
+                    <p id="homeSchoolAddr" class="text-xs text-blue-200/80 line-clamp-1">상단 검색 버튼을 눌러 등록된 학교를 지정할 수 있습니다.</p>
+                </div>
+
+                <!-- Today's Meal Card -->
+                <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-stitch space-y-3">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <div class="p-2 bg-orange-50 text-orange-600 rounded-xl">
+                                <i data-lucide="utensils" class="w-4 h-4"></i>
+                            </div>
+                            <h3 class="font-bold text-slate-900 text-sm">오늘의 급식</h3>
+                        </div>
+                        <span id="todayDateStr" class="text-xs text-slate-400 font-medium"></span>
+                    </div>
+                    <div id="todayMealContent" class="bg-slate-50 rounded-xl p-3 text-xs text-slate-600 leading-relaxed">
+                        학교를 선택하시면 오늘의 급식 정보를 불러옵니다.
+                    </div>
+                </div>
+
+                <!-- Upcoming Academic Schedule Card -->
+                <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-stitch space-y-3">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <div class="p-2 bg-blue-50 text-blue-600 rounded-xl">
+                                <i data-lucide="calendar" class="w-4 h-4"></i>
+                            </div>
+                            <h3 class="font-bold text-slate-900 text-sm">다가오는 학사 일정</h3>
+                        </div>
+                        <button onclick="switchTab('schedule')" class="text-xs text-blue-600 font-semibold">전체보기</button>
+                    </div>
+                    <div id="upcomingEventsList" class="space-y-2">
+                        <div class="text-xs text-slate-400 text-center py-3">일정이 없습니다.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 2: WEEKLY MEAL -->
+            <section id="view-meal" class="hidden space-y-4">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-base font-bold text-slate-900">주간 급식 식단</h2>
+                    <input type="week" id="mealWeekPicker" onchange="loadWeeklyMeals()" class="text-xs bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-600 font-medium outline-none">
+                </div>
+                <div id="weeklyMealContainer" class="space-y-3">
+                    <!-- Dynamic Meals -->
+                </div>
+            </section>
+
+            <!-- VIEW 3: MONTHLY ACADEMIC CALENDAR -->
+            <section id="view-schedule" class="hidden space-y-4">
+                <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-stitch space-y-3">
+                    <div class="flex justify-between items-center px-1">
+                        <h2 id="calendarMonthTitle" class="text-base font-bold text-slate-900">2026년 7월</h2>
+                        <div class="flex items-center gap-1">
+                            <button onclick="changeMonth(-1)" class="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600">
+                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="changeMonth(1)" class="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600">
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="calendar-grid text-center text-xs font-semibold text-slate-400 py-1 border-b border-slate-100">
+                        <div class="text-red-500">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="text-blue-500">토</div>
+                    </div>
+                    <div id="calendarDaysGrid" class="calendar-grid text-center text-xs gap-y-2">
+                        <!-- Days Rendered via JS -->
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-stitch space-y-3">
+                    <h3 class="font-bold text-slate-900 text-sm">이번 달 상세 일정</h3>
+                    <div id="monthlyScheduleList" class="space-y-2 divide-y divide-slate-100">
+                        <!-- Dynamic Events -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 4: SETTINGS & NOTIFICATIONS -->
+            <section id="view-settings" class="hidden space-y-4">
+                <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-stitch space-y-4">
+                    <h2 class="font-bold text-slate-900 text-sm border-b border-slate-100 pb-2">학교 설정</h2>
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-800">현재 지정 학교</p>
+                            <p id="settingsSchoolName" class="text-xs text-slate-500 mt-0.5">미지정</p>
+                        </div>
+                        <button onclick="openSearchModal()" class="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold active:scale-95 transition-transform">
+                            학교 변경
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-stitch space-y-4">
+                    <h2 class="font-bold text-slate-900 text-sm border-b border-slate-100 pb-2">알림 및 서비스 설정</h2>
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-800">급식 정보 푸시 알림</p>
+                            <p class="text-[11px] text-slate-400">매일 아침 오늘의 식단을 전달받습니다.</p>
+                        </div>
+                        <input type="checkbox" checked class="w-4 h-4 accent-blue-600 rounded">
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-800">학사 일정 알림</p>
+                            <p class="text-[11px] text-slate-400">시험, 방학 등 주요 일정 전날 알림을 제공합니다.</p>
+                        </div>
+                        <input type="checkbox" checked class="w-4 h-4 accent-blue-600 rounded">
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- BOTTOM NAVIGATION BAR -->
+        <nav class="fixed bottom-0 w-full max-w-md bg-white/95 backdrop-blur-md border-t border-slate-100 px-6 py-2 flex justify-between items-center z-40">
+            <button onclick="switchTab('home')" id="nav-home" class="nav-btn active-tab flex flex-col items-center gap-1 text-slate-400 hover:text-blue-900 transition-colors">
+                <i data-lucide="home" class="w-5 h-5"></i>
+                <span class="text-[10px]">홈</span>
+            </button>
+            <button onclick="switchTab('meal')" id="nav-meal" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-blue-900 transition-colors">
+                <i data-lucide="utensils" class="w-5 h-5"></i>
+                <span class="text-[10px]">주간급식</span>
+            </button>
+            <button onclick="switchTab('schedule')" id="nav-schedule" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-blue-900 transition-colors">
+                <i data-lucide="calendar" class="w-5 h-5"></i>
+                <span class="text-[10px]">학사일정</span>
+            </button>
+            <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-blue-900 transition-colors">
+                <i data-lucide="settings" class="w-5 h-5"></i>
+                <span class="text-[10px]">설정</span>
+            </button>
+        </nav>
+
+        <!-- SEARCH SCHOOL MODAL -->
+        <div id="searchModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex flex-col justify-end hidden">
+            <div class="bg-white rounded-t-3xl p-5 w-full max-w-md mx-auto h-[85vh] flex flex-col space-y-4 animate-in slide-in-from-bottom duration-200">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-base text-slate-900">학교 검색</h3>
+                    <button onclick="closeSearchModal()" class="p-1 rounded-full bg-slate-100 text-slate-500">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[11px] font-semibold text-slate-500">시도교육청 선택</label>
+                    <select id="eduOfficeSelect" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-800 outline-none focus:border-blue-600">
+                        <option value="B10">서울특별시교육청</option>
+                        <option value="C10">부산광역시교육청</option>
+                        <option value="D10">대구광역시교육청</option>
+                        <option value="E10">인천광역시교육청</option>
+                        <option value="F10">광주광역시교육청</option>
+                        <option value="G10">대전광역시교육청</option>
+                        <option value="H10">울산광역시교육청</option>
+                        <option value="I10">세종특별자치시교육청</option>
+                        <option value="J10" selected>경기도교육청</option>
+                        <option value="K10">강원특별자치도교육청</option>
+                        <option value="M10">충청북도교육청</option>
+                        <option value="N10">충청남도교육청</option>
+                        <option value="P10">전북특별자치도교육청</option>
+                        <option value="Q10">전라남도교육청</option>
+                        <option value="R10">경상북도교육청</option>
+                        <option value="S10">경상남도교육청</option>
+                        <option value="T10">제주특별자치도교육청</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-2">
+                    <input type="text" id="schoolSearchInput" placeholder="학교 이름을 입력하세요 (예: 수원고등학교)" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:border-blue-600">
+                    <button onclick="searchSchool()" class="px-4 bg-blue-900 text-white font-bold rounded-xl text-xs active:scale-95 transition-transform">
+                        검색
+                    </button>
+                </div>
+
+                <div id="schoolSearchResultList" class="flex-1 overflow-y-auto divide-y divide-slate-100 no-scrollbar pt-2">
+                    <div class="text-center py-10 text-xs text-slate-400">교육청을 선택하고 학교명을 검색하세요.</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        let currentSchool = JSON.parse(localStorage.getItem('selectedSchool')) || {
+            ATPT_OFCDC_SC_CODE: 'J10',
+            ATPT_OFCDC_SC_NM: '경기도교육청',
+            SD_SCHUL_CODE: '7530079',
+            SCHUL_NM: '수원고등학교',
+            ORG_RDNMA: '경기도 수원시 팔달구 매산로 119'
+        };
+
+        let currentDate = new Date(2026, 6, 26);
+
+        // Helper function for Vercel API / Fallback handling
+        async function fetchNeisData(endpoint, params) {
+            const searchParams = new URLSearchParams({ endpoint, ...params });
+            const apiEndpoint = `/api/generate?${searchParams.toString()}`;
+
+            try {
+                const response = await fetch(apiEndpoint);
+                if (!response.ok) throw new Error('API server response not OK');
+                return await response.json();
+            } catch (err) {
+                // Direct Fallback if running standalone preview without Vercel serverless environment
+                const fallbackUrl = `https://open.neis.go.kr/hub/${endpoint}?KEY=sample&Type=json&${new URLSearchParams(params).toString()}`;
+                const fallbackResponse = await fetch(fallbackUrl);
+                return await fallbackResponse.json();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            updateTodayDateDisplay();
+            initWeekPicker();
+            applySelectedSchoolUI();
+            loadAllData();
+        });
+
+        function updateTodayDateDisplay() {
+            const options = { month: 'long', day: 'numeric', weekday: 'short' };
+            document.getElementById('todayDateStr').innerText = new Date().toLocaleDateString('ko-KR', options);
+        }
+
+        function initWeekPicker() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const week = getWeekNumber(now);
+            document.getElementById('mealWeekPicker').value = `${year}-W${week.toString().padStart(2, '0')}`;
+        }
+
+        function getWeekNumber(d) {
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('main > section').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-tab', 'text-blue-900'));
+            document.getElementById(`nav-${tabId}`).classList.add('active-tab');
+
+            if (tabId === 'meal') loadWeeklyMeals();
+            if (tabId === 'schedule') renderCalendar();
+        }
+
+        function openSearchModal() {
+            document.getElementById('searchModal').classList.remove('hidden');
+        }
+
+        function closeSearchModal() {
+            document.getElementById('searchModal').classList.add('hidden');
+        }
+
+        async function searchSchool() {
+            const eduCode = document.getElementById('eduOfficeSelect').value;
+            const keyword = document.getElementById('schoolSearchInput').value.trim();
+            const resultList = document.getElementById('schoolSearchResultList');
+
+            if (!keyword) {
+                alert('학교 이름을 입력해 주세요.');
+                return;
+            }
+
+            resultList.innerHTML = `<div class="text-center py-8 text-xs text-slate-400">검색 중...</div>`;
+
+            try {
+                const data = await fetchNeisData('schoolInfo', {
+                    ATPT_OFCDC_SC_CODE: eduCode,
+                    SCHUL_NM: keyword,
+                    pIndex: '1',
+                    pSize: '20'
+                });
+
+                if (data.schoolInfo) {
+                    const schools = data.schoolInfo[1].row;
+                    resultList.innerHTML = schools.map(s => `
+                        <div onclick="selectSchool('${s.ATPT_OFCDC_SC_CODE}', '${s.ATPT_OFCDC_SC_NM}', '${s.SD_SCHUL_CODE}', '${s.SCHUL_NM}', '${s.ORG_RDNMA}')" 
+                             class="py-3 px-2 hover:bg-slate-50 cursor-pointer rounded-xl flex flex-col gap-0.5">
+                            <span class="font-bold text-xs text-slate-800">${s.SCHUL_NM}</span>
+                            <span class="text-[11px] text-slate-400">${s.ORG_RDNMA || '주소 정보 없음'}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    resultList.innerHTML = `<div class="text-center py-8 text-xs text-slate-400">검색 결과가 없습니다.</div>`;
+                }
+            } catch (err) {
+                resultList.innerHTML = `<div class="text-center py-8 text-xs text-red-400">데이터를 불러올 수 없습니다.</div>`;
+            }
+        }
+
+        function selectSchool(eduCode, eduName, schoolCode, schoolName, addr) {
+            currentSchool = {
+                ATPT_OFCDC_SC_CODE: eduCode,
+                ATPT_OFCDC_SC_NM: eduName,
+                SD_SCHUL_CODE: schoolCode,
+                SCHUL_NM: schoolName,
+                ORG_RDNMA: addr
+            };
+            localStorage.setItem('selectedSchool', JSON.stringify(currentSchool));
+            applySelectedSchoolUI();
+            closeSearchModal();
+            loadAllData();
+        }
+
+        function applySelectedSchoolUI() {
+            document.getElementById('headerSchoolSub').innerText = `${currentSchool.ATPT_OFCDC_SC_NM} • ${currentSchool.SCHUL_NM}`;
+            document.getElementById('homeEduOfficeTag').innerText = currentSchool.ATPT_OFCDC_SC_NM;
+            document.getElementById('homeSchoolName').innerText = currentSchool.SCHUL_NM;
+            document.getElementById('homeSchoolAddr').innerText = currentSchool.ORG_RDNMA;
+            document.getElementById('settingsSchoolName').innerText = `${currentSchool.SCHUL_NM} (${currentSchool.ATPT_OFCDC_SC_NM})`;
+        }
+
+        function loadAllData() {
+            loadTodayMeal();
+            loadUpcomingEvents();
+        }
+
+        async function loadTodayMeal() {
+            const container = document.getElementById('todayMealContent');
+            const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+
+            try {
+                const data = await fetchNeisData('mealServiceDietInfo', {
+                    ATPT_OFCDC_SC_CODE: currentSchool.ATPT_OFCDC_SC_CODE,
+                    SD_SCHUL_CODE: currentSchool.SD_SCHUL_CODE,
+                    MLSV_YMD: todayStr
+                });
+
+                if (data.mealServiceDietInfo) {
+                    const meal = data.mealServiceDietInfo[1].row[0];
+                    const cleanedDDISH = meal.DDISH_NM.replace(/<br\/>/g, ', ').replace(/\([0-9.]+\)/g, '');
+                    container.innerHTML = `
+                        <p class="font-medium text-slate-800 mb-1">${cleanedDDISH}</p>
+                        <p class="text-[11px] text-slate-400">${meal.CAL_INFO}</p>
+                    `;
+                } else {
+                    container.innerText = "오늘 등록된 급식 정보가 없거나 휴교일입니다.";
+                }
+            } catch {
+                container.innerText = "급식 데이터를 불러오는데 실패했습니다.";
+            }
+        }
+
+        async function loadWeeklyMeals() {
+            const container = document.getElementById('weeklyMealContainer');
+            container.innerHTML = `<div class="text-center py-8 text-xs text-slate-400">주간 급식을 불러오는 중...</div>`;
+
+            const weekVal = document.getElementById('mealWeekPicker').value;
+            if(!weekVal) return;
+
+            const [year, week] = weekVal.split('-W').map(Number);
+            const simpleDate = new Date(year, 0, 1 + (week - 1) * 7);
+            const dayOfWeek = simpleDate.getDay();
+            const startDate = new Date(simpleDate);
+            if (dayOfWeek <= 4) startDate.setDate(simpleDate.getDate() - simpleDate.getDay() + 1);
+            else startDate.setDate(simpleDate.getDate() + 8 - simpleDate.getDay());
+
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + 4);
+
+            const startYMD = startDate.toISOString().slice(0, 10).replace(/-/g, '');
+            const endYMD = endDate.toISOString().slice(0, 10).replace(/-/g, '');
+
+            try {
+                const data = await fetchNeisData('mealServiceDietInfo', {
+                    ATPT_OFCDC_SC_CODE: currentSchool.ATPT_OFCDC_SC_CODE,
+                    SD_SCHUL_CODE: currentSchool.SD_SCHUL_CODE,
+                    MLSV_FROM_YMD: startYMD,
+                    MLSV_TO_YMD: endYMD
+                });
+
+                if (data.mealServiceDietInfo) {
+                    const meals = data.mealServiceDietInfo[1].row;
+                    container.innerHTML = meals.map(m => {
+                        const dateFormatted = `${m.MLSV_YMD.substring(4,6)}월 ${m.MLSV_YMD.substring(6,8)}일`;
+                        const cleanedDDISH = m.DDISH_NM.replace(/<br\/>/g, '<br/>');
+                        return `
+                            <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-stitch space-y-2">
+                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                    <span class="font-bold text-xs text-blue-900">${dateFormatted} (${m.MMEAL_SC_NM})</span>
+                                    <span class="text-[11px] text-slate-400 font-medium">${m.CAL_INFO}</span>
+                                </div>
+                                <p class="text-xs text-slate-700 leading-relaxed">${cleanedDDISH}</p>
+                                <p class="text-[10px] text-slate-400 pt-1">알레르기 정보: ${m.NTR_INFO ? m.NTR_INFO.slice(0, 30) + '...' : '정보 없음'}</p>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    container.innerHTML = `<div class="text-center py-8 text-xs text-slate-400">해당 주간에 등록된 급식 식단이 없습니다.</div>`;
+                }
+            } catch {
+                container.innerHTML = `<div class="text-center py-8 text-xs text-red-400">식단을 불러오는데 실패했습니다.</div>`;
+            }
+        }
+
+        async function loadUpcomingEvents() {
+            const container = document.getElementById('upcomingEventsList');
+            const todayYMD = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+
+            try {
+                const data = await fetchNeisData('SchoolSchedule', {
+                    ATPT_OFCDC_SC_CODE: currentSchool.ATPT_OFCDC_SC_CODE,
+                    SD_SCHUL_CODE: currentSchool.SD_SCHUL_CODE,
+                    AA_FROM_YMD: todayYMD
+                });
+
+                if (data.SchoolSchedule) {
+                    const events = data.SchoolSchedule[1].row.slice(0, 3);
+                    container.innerHTML = events.map(e => `
+                        <div class="flex items-center justify-between py-1.5 text-xs border-b border-slate-50 last:border-0">
+                            <span class="font-medium text-slate-700">${e.EVENT_NM}</span>
+                            <span class="text-[11px] text-slate-400">${e.AA_YMD.substring(4,6)}.${e.AA_YMD.substring(6,8)}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = `<div class="text-xs text-slate-400 text-center py-2">등록된 예정 학사 일정이 없습니다.</div>`;
+                }
+            } catch {
+                container.innerHTML = `<div class="text-xs text-red-400 text-center py-2">일정을 불러올 수 없습니다.</div>`;
+            }
+        }
+
+        function changeMonth(delta) {
+            currentDate.setMonth(currentDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        async function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            document.getElementById('calendarMonthTitle').innerText = `${year}년 ${month + 1}월`;
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+            
+            const grid = document.getElementById('calendarDaysGrid');
+            grid.innerHTML = '';
+
+            for (let i = 0; i < firstDay; i++) {
+                grid.innerHTML += `<div></div>`;
+            }
+
+            for (let date = 1; date <= lastDate; date++) {
+                const isToday = date === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear();
+                grid.innerHTML += `
+                    <div class="py-1.5 text-xs font-medium ${isToday ? 'bg-blue-900 text-white rounded-full' : 'text-slate-700'}">
+                        ${date}
+                    </div>
+                `;
+            }
+
+            const fromYMD = `${year}${(month + 1).toString().padStart(2, '0')}01`;
+            const toYMD = `${year}${(month + 1).toString().padStart(2, '0')}${lastDate}`;
+            const listContainer = document.getElementById('monthlyScheduleList');
+            listContainer.innerHTML = `<div class="text-center py-4 text-xs text-slate-400">일정을 불러오는 중...</div>`;
+
+            try {
+                const data = await fetchNeisData('SchoolSchedule', {
+                    ATPT_OFCDC_SC_CODE: currentSchool.ATPT_OFCDC_SC_CODE,
+                    SD_SCHUL_CODE: currentSchool.SD_SCHUL_CODE,
+                    AA_FROM_YMD: fromYMD,
+                    AA_TO_YMD: toYMD
+                });
+
+                if (data.SchoolSchedule) {
+                    const events = data.SchoolSchedule[1].row;
+                    listContainer.innerHTML = events.map(e => `
+                        <div class="py-2.5 flex justify-between items-center text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                                <span class="font-medium text-slate-800">${e.EVENT_NM}</span>
+                            </div>
+                            <span class="text-[11px] text-slate-400 font-medium">${e.AA_YMD.substring(4,6)}월 ${e.AA_YMD.substring(6,8)}일</span>
+                        </div>
+                    `).join('');
+                } else {
+                    listContainer.innerHTML = `<div class="text-center py-4 text-xs text-slate-400">이번 달 등록된 학사일정이 없습니다.</div>`;
+                }
+            } catch {
+                listContainer.innerHTML = `<div class="text-center py-4 text-xs text-red-400">일정을 불러오지 못했습니다.</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
