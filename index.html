@@ -40,6 +40,11 @@
     </script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Firebase App & Firestore SDKs (v10 Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
         
@@ -143,6 +148,22 @@
                         <div class="text-xs text-slate-400 text-center py-3">일정이 없습니다.</div>
                     </div>
                 </div>
+
+                <!-- Student Reviews Preview Card -->
+                <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-stitch space-y-3">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+                                <i data-lucide="message-square" class="w-4 h-4"></i>
+                            </div>
+                            <h3 class="font-bold text-slate-900 text-sm">학생 소감 및 평가</h3>
+                        </div>
+                        <button onclick="switchTab('reviews')" class="text-xs text-[#0047FF] font-semibold">소감 남기기</button>
+                    </div>
+                    <div id="homeReviewPreview" class="space-y-2">
+                        <div class="text-xs text-slate-400 text-center py-3">등록된 소감이 없습니다. 첫 후기를 작성해보세요!</div>
+                    </div>
+                </div>
             </section>
 
             <!-- VIEW 2: WEEKLY MEAL -->
@@ -212,6 +233,65 @@
                 </div>
             </section>
 
+            <!-- VIEW 5: STUDENT REVIEWS & FEEDBACK -->
+            <section id="view-reviews" class="hidden space-y-4">
+                <!-- Section Header -->
+                <div class="px-1">
+                    <h2 class="text-xl font-extrabold text-slate-900">학생 소감 게시판</h2>
+                    <p class="text-xs font-medium text-slate-400 mt-0.5">학교 정보 플러스 앱 사용 후기나 학교 생활 의견을 나눠보세요.</p>
+                </div>
+
+                <!-- Write Review Form Card -->
+                <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-stitch space-y-3.5">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                        <i data-lucide="pen-tool" class="w-4 h-4 text-[#0047FF]"></i>
+                        소감 작성하기
+                    </h3>
+                    
+                    <div class="space-y-2.5">
+                        <div class="flex gap-2">
+                            <input type="text" id="reviewAuthorInput" placeholder="닉네임 (예: 3학년 김수원)" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:border-blue-600 transition-colors">
+                            
+                            <!-- Rating Selector -->
+                            <div class="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+                                <span class="text-xs font-semibold text-amber-500 flex items-center gap-1">
+                                    ★ <span id="selectedRatingText">5</span>점
+                                </span>
+                                <div class="flex gap-0.5 ml-1">
+                                    <button type="button" onclick="setRating(1)" class="star-btn text-amber-400 text-xs">★</button>
+                                    <button type="button" onclick="setRating(2)" class="star-btn text-amber-400 text-xs">★</button>
+                                    <button type="button" onclick="setRating(3)" class="star-btn text-amber-400 text-xs">★</button>
+                                    <button type="button" onclick="setRating(4)" class="star-btn text-amber-400 text-xs">★</button>
+                                    <button type="button" onclick="setRating(5)" class="star-btn text-amber-400 text-xs">★</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <textarea id="reviewContentInput" rows="3" placeholder="앱 사용 소감이나 학교 급식/일정에 대한 따뜻한 한마디를 남겨주세요." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 outline-none focus:border-blue-600 resize-none transition-colors"></textarea>
+                        
+                        <button onclick="submitReview()" id="submitReviewBtn" class="w-full py-3 bg-[#0047FF] hover:bg-blue-700 text-white rounded-xl text-xs font-bold active:scale-[0.98] transition-all shadow-md shadow-blue-600/20 flex items-center justify-center gap-1.5">
+                            <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                            <span>소감 등록하기</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Review List Area -->
+                <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-stitch space-y-3">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                            <i data-lucide="message-square" class="w-4 h-4 text-slate-600"></i>
+                            <span>최신 등록된 소감</span>
+                        </h3>
+                        <span id="reviewCountBadge" class="px-2 py-0.5 bg-blue-50 text-[#0047FF] text-[11px] font-bold rounded-lg">0개</span>
+                    </div>
+
+                    <div id="reviewListContainer" class="space-y-3 divide-y divide-slate-100">
+                        <div class="text-center py-8 text-xs text-slate-400 font-medium">소감을 불러오는 중입니다...</div>
+                    </div>
+                </div>
+            </section>
+
             <!-- VIEW 4: SETTINGS & NOTIFICATIONS -->
             <section id="view-settings" class="hidden space-y-4">
                 <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-stitch space-y-4">
@@ -249,20 +329,24 @@
         </main>
 
         <!-- BOTTOM NAVIGATION BAR -->
-        <nav class="fixed bottom-0 w-full max-w-md bg-white/95 backdrop-blur-md border-t border-slate-100 px-6 py-2 flex justify-between items-center z-40">
-            <button onclick="switchTab('home')" id="nav-home" class="nav-btn active-tab flex flex-col items-center gap-1 text-slate-400 hover:text-[#0047FF] transition-colors">
+        <nav class="fixed bottom-0 w-full max-w-md bg-white/95 backdrop-blur-md border-t border-slate-100 px-4 py-2 flex justify-between items-center z-40">
+            <button onclick="switchTab('home')" id="nav-home" class="nav-btn active-tab flex flex-col items-center gap-1 text-slate-400 hover:text-[#0047FF] transition-colors flex-1">
                 <i data-lucide="home" class="w-5 h-5"></i>
                 <span class="text-[10px]">홈</span>
             </button>
-            <button onclick="switchTab('meal')" id="nav-meal" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-[#0047FF] transition-colors">
+            <button onclick="switchTab('meal')" id="nav-meal" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-[#0047FF] transition-colors flex-1">
                 <i data-lucide="utensils" class="w-5 h-5"></i>
                 <span class="text-[10px]">주간급식</span>
             </button>
-            <button onclick="switchTab('schedule')" id="nav-schedule" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-[#0047FF] transition-colors">
+            <button onclick="switchTab('schedule')" id="nav-schedule" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-[#0047FF] transition-colors flex-1">
                 <i data-lucide="calendar" class="w-5 h-5"></i>
                 <span class="text-[10px]">학사일정</span>
             </button>
-            <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-[#0047FF] transition-colors">
+            <button onclick="switchTab('reviews')" id="nav-reviews" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-[#0047FF] transition-colors flex-1">
+                <i data-lucide="message-square" class="w-5 h-5"></i>
+                <span class="text-[10px]">학생소감</span>
+            </button>
+            <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-[#0047FF] transition-colors flex-1">
                 <i data-lucide="settings" class="w-5 h-5"></i>
                 <span class="text-[10px]">설정</span>
             </button>
@@ -312,6 +396,19 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
+        // FIREBASE INITIALIZATION
+        const firebaseConfig = {
+            apiKey: "AIzaSyBaA-3e8eRcmaAyNTR35NqS43v7zlYyb1c",
+            authDomain: "app-feedback-b36c4.firebaseapp.com",
+            projectId: "app-feedback-b36c4",
+            storageBucket: "app-feedback-b36c4.firebasestorage.app",
+            messagingSenderId: "793262622057",
+            appId: "1:793262622057:web:b665df4af083dd9c9869f8"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         const NEIS_KEY = 'sample'; // Public API Key
         
         let currentSchool = JSON.parse(localStorage.getItem('selectedSchool')) || {
@@ -331,6 +428,9 @@
         // Calendar Schedule State Variables
         let selectedCalendarDate = null; // null or day number (1..31)
         let currentMonthEvents = [];
+
+        // Review Form Rating State
+        let currentRating = 5;
 
         // Education Offices Code Data
         const eduOffices = [
@@ -400,7 +500,145 @@
             }
 
             loadAllData();
+            initFirestoreReviews();
         });
+
+        // FIRESTORE REVIEWS LOGIC
+        function initFirestoreReviews() {
+            // Subscribe to real-time updates sorted by creation date descending
+            db.collection('reviews')
+              .orderBy('createdAt', 'desc')
+              .onSnapshot((snapshot) => {
+                  const reviews = [];
+                  snapshot.forEach((doc) => {
+                      reviews.push({ id: doc.id, ...doc.data() });
+                  });
+                  renderReviewsUI(reviews);
+              }, (error) => {
+                  console.error("Firestore reviews error:", error);
+                  document.getElementById('reviewListContainer').innerHTML = 
+                      `<div class="text-center py-6 text-xs text-red-400 font-medium">소감을 불러오지 못했습니다.</div>`;
+              });
+        }
+
+        function setRating(val) {
+            currentRating = val;
+            document.getElementById('selectedRatingText').innerText = val;
+            const buttons = document.querySelectorAll('.star-btn');
+            buttons.forEach((btn, idx) => {
+                if (idx < val) {
+                    btn.classList.add('text-amber-400');
+                    btn.classList.remove('text-slate-300');
+                } else {
+                    btn.classList.remove('text-amber-400');
+                    btn.classList.add('text-slate-300');
+                }
+            });
+        }
+
+        async function submitReview() {
+            const authorInput = document.getElementById('reviewAuthorInput');
+            const contentInput = document.getElementById('reviewContentInput');
+            const submitBtn = document.getElementById('submitReviewBtn');
+
+            const author = authorInput.value.trim() || '익명 학생';
+            const content = contentInput.value.trim();
+
+            if (!content) {
+                alert('소감 내용을 입력해 주세요.');
+                contentInput.focus();
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50');
+
+            try {
+                await db.collection('reviews').add({
+                    author: author,
+                    content: content,
+                    rating: currentRating,
+                    schoolName: currentSchool.SCHUL_NM || '미지정',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                contentInput.value = '';
+                authorInput.value = '';
+                setRating(5);
+                alert('소감이 성공적으로 등록되었습니다!');
+            } catch (err) {
+                console.error("Failed to submit review:", err);
+                alert('소감 저장에 실패했습니다. 다시 시도해 주세요.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50');
+            }
+        }
+
+        function renderReviewsUI(reviews) {
+            const container = document.getElementById('reviewListContainer');
+            const badge = document.getElementById('reviewCountBadge');
+            const homePreview = document.getElementById('homeReviewPreview');
+
+            if (badge) badge.innerText = `${reviews.length}개`;
+
+            // Render Home Preview (Top 2)
+            if (homePreview) {
+                if (reviews.length > 0) {
+                    homePreview.innerHTML = reviews.slice(0, 2).map(r => `
+                        <div class="p-2.5 bg-slate-50 rounded-xl text-xs space-y-1">
+                            <div class="flex justify-between items-center text-[11px]">
+                                <span class="font-bold text-slate-800">${escapeHtml(r.author)} <span class="text-slate-400 font-normal">(${escapeHtml(r.schoolName)})</span></span>
+                                <span class="text-amber-500 font-bold">★ ${r.rating || 5}</span>
+                            </div>
+                            <p class="text-slate-600 line-clamp-2 leading-relaxed">${escapeHtml(r.content)}</p>
+                        </div>
+                    `).join('');
+                } else {
+                    homePreview.innerHTML = `<div class="text-xs text-slate-400 text-center py-3">등록된 소감이 없습니다.</div>`;
+                }
+            }
+
+            // Render Full List
+            if (reviews.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-xs text-slate-400 font-medium">아직 등록된 소감이 없습니다.<br/>첫 번째 소감을 남겨보세요!</div>`;
+                return;
+            }
+
+            container.innerHTML = reviews.map(r => {
+                let dateStr = '방금 전';
+                if (r.createdAt && r.createdAt.toDate) {
+                    const date = r.createdAt.toDate();
+                    dateStr = `${date.getFullYear()}.${(date.getMonth()+1).toString().padStart(2,'0')}.${date.getDate().toString().padStart(2,'0')}`;
+                }
+                const stars = '★'.repeat(r.rating || 5) + '☆'.repeat(5 - (r.rating || 5));
+
+                return `
+                    <div class="pt-3 first:pt-0 space-y-1.5">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-xs text-slate-900">${escapeHtml(r.author)}</span>
+                                <span class="px-2 py-0.5 bg-slate-100 text-[10px] text-slate-500 rounded-md font-medium">${escapeHtml(r.schoolName || '학교')}</span>
+                            </div>
+                            <span class="text-[11px] text-amber-500 font-bold">${stars}</span>
+                        </div>
+                        <p class="text-xs text-slate-700 leading-relaxed font-normal">${escapeHtml(r.content)}</p>
+                        <div class="text-[10px] text-slate-400 text-right">${dateStr}</div>
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;")
+                      .replace(/</g, "&lt;")
+                      .replace(/>/g, "&gt;")
+                      .replace(/"/g, "&quot;")
+                      .replace(/'/g, "&#039;");
+        }
 
         function updateTodayDateDisplay() {
             const options = { month: 'long', day: 'numeric', weekday: 'short' };
