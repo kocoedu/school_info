@@ -2,60 +2,47 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>School Info Plus - 학교 정보 플러스</title>
-    
-    <!-- PWA & Mobile Optimization Tags -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="theme-color" content="#0A192F">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학교알리미 - 주간 급식 & 학사 일정</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter & Noto Sans KR -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: {
-                        brand: {
-                            navy: '#0A192F',
-                            primary: '#1E3A8A',
-                            accent: '#0047FF',
-                            light: '#3B82F6',
-                            bg: '#F8FAFC',
-                            surface: '#FFFFFF',
-                            subtle: '#F1F4F9'
+                    fontFamily: {
+                        sans: ['"Noto Sans KR"', 'sans-serif'],
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(6px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(100%)' },
+                            '100%': { transform: 'translateY(0)' },
                         }
                     },
-                    fontFamily: {
-                        sans: ['Pretendard', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'Roboto', 'sans-serif']
-                    },
-                    boxShadow: {
-                        'stitch': '0 4px 20px -2px rgba(30, 58, 138, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04)',
-                        'stitch-lg': '0 10px 25px -5px rgba(30, 58, 138, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.04)'
+                    animation: {
+                        fadeIn: 'fadeIn 0.25s ease-out forwards',
+                        slideUp: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
                     }
                 }
             }
         }
     </script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-
-    <!-- Firebase App & Firestore SDKs (v10 Compat) -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
     <style>
-        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-        
         body {
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: #F8FAFC;
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f1f5f9;
             -webkit-tap-highlight-color: transparent;
-            user-select: none;
         }
-
-        /* Hide Scrollbar for clean mobile experience */
+        /* Hide scrollbar for clean app container */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -63,1057 +50,952 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
-
-        .active-tab {
-            color: #0047FF;
-            font-weight: 700;
-        }
-        .active-tab i {
-            stroke-width: 2.5px;
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-        }
     </style>
 </head>
-<body class="text-slate-800 antialiased bg-slate-100 flex justify-center min-h-screen">
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen">
 
-    <!-- Mobile Frame Container -->
-    <div class="w-full max-w-md bg-[#F8FAFC] min-h-screen flex flex-col shadow-2xl relative pb-20 border-x border-slate-200/60">
+    <div id="app" class="max-w-md mx-auto bg-slate-100 min-h-screen relative shadow-2xl pb-24 border-x border-slate-200">
         
-        <!-- HEADER -->
-        <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-100 px-5 py-3.5 flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-900 to-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-900/20">
-                    <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+        <!-- Header Section -->
+        <header class="sticky top-0 z-30 bg-slate-900 text-white px-5 py-4 shadow-md backdrop-blur-md bg-opacity-95">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-sky-400 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                        <i class="fa-solid fa-graduation-cap text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
+                            학교알리미
+                            <span class="text-[10px] bg-indigo-500/30 text-indigo-300 font-medium px-1.5 py-0.5 rounded border border-indigo-400/30">NEIS</span>
+                        </h1>
+                        <p class="text-xs text-slate-400">급식 & 학사일정 스마트 포털</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="text-base font-extrabold text-slate-900 leading-none">School Info<span class="text-[#0047FF]">+</span></h1>
-                    <p id="headerSchoolSub" class="text-[11px] text-slate-400 font-medium mt-0.5">학교를 검색하여 지정해보세요</p>
-                </div>
+
+                <button id="btn-api-info" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-indigo-300 transition-colors border border-slate-700/60" title="API 설정 정보">
+                    <i class="fa-solid fa-code text-sm"></i>
+                </button>
             </div>
-            <button onclick="openSearchModal()" class="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 active:scale-95 transition-transform">
-                <i data-lucide="search" class="w-4 h-4"></i>
-            </button>
+
+            <div class="mt-4">
+                <button id="btn-open-search" class="w-full bg-slate-800/90 hover:bg-slate-800 border border-slate-700/80 rounded-2xl p-3 flex items-center justify-between text-left transition-all active:scale-[0.99] shadow-inner group">
+                    <div class="flex items-center space-x-3 overflow-hidden">
+                        <div class="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 group-hover:bg-indigo-500/20 transition-colors">
+                            <i class="fa-solid fa-location-dot text-sm"></i>
+                        </div>
+                        <div class="truncate">
+                            <div class="flex items-center gap-2">
+                                <span id="current-office-name" class="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-900/60 text-indigo-300 border border-indigo-700/50">서울특별시교육청</span>
+                            </div>
+                            <div id="current-school-name" class="text-sm font-bold text-white truncate mt-0.5">서울고등학교</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-1.5 text-xs text-indigo-300 font-medium bg-slate-700/60 px-2.5 py-1.5 rounded-xl border border-slate-600/50 shrink-0">
+                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                        <span>변경</span>
+                    </div>
+                </button>
+            </div>
         </header>
 
-        <!-- MAIN CONTENT CONTAINER -->
-        <main class="flex-1 px-4 py-4 overflow-y-auto no-scrollbar space-y-5">
+        <div class="bg-white px-4 py-2 border-b border-slate-200 sticky top-[138px] z-20 shadow-sm">
+            <div class="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl">
+                <button id="tab-meal" onclick="switchTab('meal')" class="flex items-center justify-center space-x-1.5 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white text-indigo-600 shadow-sm">
+                    <i class="fa-solid fa-utensils"></i>
+                    <span>주간 급식</span>
+                </button>
+                <button id="tab-schedule" onclick="switchTab('schedule')" class="flex items-center justify-center space-x-1.5 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all text-slate-500 hover:text-slate-800">
+                    <i class="fa-regular fa-calendar-days"></i>
+                    <span>학사 일정</span>
+                </button>
+                <button id="tab-board" onclick="switchTab('board')" class="flex items-center justify-center space-x-1.5 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all text-slate-500 hover:text-slate-800">
+                    <i class="fa-regular fa-comment-dots"></i>
+                    <span>의견 게시판</span>
+                </button>
+            </div>
+        </div>
+
+        <main class="p-4 space-y-4">
             
-            <!-- VIEW 1: HOME DASHBOARD -->
-            <section id="view-home" class="space-y-5">
-                <!-- Selected School Info Banner Card -->
-                <div class="bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 text-white rounded-2xl p-5 shadow-stitch relative overflow-hidden">
-                    <div class="absolute -right-4 -bottom-4 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
-                    <div class="flex justify-between items-start mb-3">
-                        <span id="homeEduOfficeTag" class="px-2.5 py-1 bg-white/10 backdrop-blur-md rounded-lg text-xs font-medium text-blue-200 border border-white/10 relative z-10">교육청 미선택</span>
-                        <button onclick="openSearchModal()" class="text-xs text-blue-200 underline underline-offset-2 flex items-center gap-1 relative z-10 py-1 px-2 -mr-2">
-                            변경 <i data-lucide="chevron-right" class="w-3 h-3"></i>
-                        </button>
+            <!-- VIEW 1: WEEKLY MEAL -->
+            <section id="view-meal" class="space-y-4 animate-fadeIn">
+                <!-- Week Controls -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex items-center justify-between">
+                    <button onclick="changeWeek(-1)" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <div class="text-center">
+                        <div id="week-badge" class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full inline-block mb-1">
+                            이번 주 식단
+                        </div>
+                        <div id="week-date-range" class="text-base font-bold text-slate-800">
+                            Loading...
+                        </div>
                     </div>
-                    <h2 id="homeSchoolName" class="text-xl font-bold mb-1 relative z-10">학교를 검색해 보세요</h2>
-                    <p id="homeSchoolAddr" class="text-xs text-blue-200/80 line-clamp-1 relative z-10">상단 검색 버튼을 눌러 등록된 학교를 지정할 수 있습니다.</p>
+                    <button onclick="changeWeek(1)" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
                 </div>
 
-                <!-- Today's Meal Card -->
-                <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-stitch space-y-3">
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center gap-2">
-                            <div class="p-2 bg-orange-50 text-orange-600 rounded-xl">
-                                <i data-lucide="utensils" class="w-4 h-4"></i>
-                            </div>
-                            <h3 class="font-bold text-slate-900 text-sm">오늘의 급식</h3>
-                        </div>
-                        <span id="todayDateStr" class="text-xs text-slate-400 font-medium"></span>
+                <!-- Allergy Notice Banner -->
+                <div class="flex items-center justify-between bg-amber-50 border border-amber-200/80 rounded-xl px-3.5 py-2.5 text-xs text-amber-800">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+                        <span>메뉴 옆 숫자는 <b>알레르기 유발물질 번호</b>입니다.</span>
                     </div>
-                    <div id="todayMealContent" class="bg-slate-50 rounded-xl p-3 text-xs text-slate-600 leading-relaxed">
-                        학교를 선택하시면 오늘의 급식 정보를 불러옵니다.
-                    </div>
+                    <button onclick="openAllergyModal()" class="font-bold underline text-amber-900 shrink-0 hover:text-amber-700 ml-2">
+                        안내
+                    </button>
                 </div>
 
-                <!-- Upcoming Academic Schedule Card -->
-                <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-stitch space-y-3">
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center gap-2">
-                            <div class="p-2 bg-blue-50 text-[#0047FF] rounded-xl">
-                                <i data-lucide="calendar" class="w-4 h-4"></i>
-                            </div>
-                            <h3 class="font-bold text-slate-900 text-sm">다가오는 학사 일정</h3>
-                        </div>
-                        <button onclick="switchTab('schedule')" class="text-xs text-[#0047FF] font-semibold">전체보기</button>
-                    </div>
-                    <div id="upcomingEventsList" class="space-y-2">
-                        <div class="text-xs text-slate-400 text-center py-3">일정이 없습니다.</div>
-                    </div>
-                </div>
-
-                <!-- Student Reviews Preview Card -->
-                <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-stitch space-y-3">
-                    <div class="flex justify-between items-center">
-                        <div class="flex items-center gap-2">
-                            <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
-                                <i data-lucide="message-square" class="w-4 h-4"></i>
-                            </div>
-                            <h3 class="font-bold text-slate-900 text-sm">학생 소감 및 평가</h3>
-                        </div>
-                        <button onclick="switchTab('reviews')" class="text-xs text-[#0047FF] font-semibold">소감 남기기</button>
-                    </div>
-                    <div id="homeReviewPreview" class="space-y-2">
-                        <div class="text-xs text-slate-400 text-center py-3">등록된 소감이 없습니다. 첫 후기를 작성해보세요!</div>
-                    </div>
+                <!-- Meal Container -->
+                <div id="meal-card-list" class="space-y-3">
+                    <!-- Dynamic Meal Cards Inserted Here -->
                 </div>
             </section>
 
-            <!-- VIEW 2: WEEKLY MEAL -->
-            <section id="view-meal" class="hidden space-y-4">
-                <!-- Section Header with School Name and Week Info -->
-                <div class="flex justify-between items-end px-1">
-                    <div>
-                        <h2 class="text-xl font-extrabold text-slate-900">주간 급식</h2>
-                        <p id="mealSubTitle" class="text-xs font-semibold text-slate-400 mt-0.5">학교명 • 10월 3주차</p>
-                    </div>
-                    <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
-                        <button onclick="changeMealWeek(-1)" class="p-1 text-slate-600 hover:bg-white rounded-lg transition-colors">
-                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
-                        </button>
-                        <span class="text-xs font-bold text-slate-700 px-1">주간 이동</span>
-                        <button onclick="changeMealWeek(1)" class="p-1 text-slate-600 hover:bg-white rounded-lg transition-colors">
-                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Day Selector Chips Carousel (Mon - Fri) -->
-                <div id="weekDayChips" class="grid grid-cols-5 gap-2 py-1">
-                    <!-- Dynamic rendering via JS -->
-                </div>
-
-                <!-- Lunch Details Card -->
-                <div id="mealDetailCard" class="bg-white rounded-2xl border border-slate-100 shadow-stitch overflow-hidden">
-                    <!-- Dynamic content rendered by JS -->
-                </div>
-            </section>
-
-            <!-- VIEW 3: MONTHLY ACADEMIC CALENDAR -->
-            <section id="view-schedule" class="hidden space-y-4">
-                <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-stitch space-y-3">
-                    <!-- Month Selector -->
-                    <div class="flex justify-between items-center px-1">
-                        <h2 id="calendarMonthTitle" class="text-base font-bold text-slate-900">2026년 7월</h2>
-                        <div class="flex items-center gap-1">
-                            <button onclick="changeMonth(-1)" class="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600">
-                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
-                            </button>
-                            <button onclick="changeMonth(1)" class="p-1.5 hover:bg-slate-100 rounded-lg text-slate-600">
-                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                            </button>
+            <!-- VIEW 2: ACADEMIC SCHEDULE -->
+            <section id="view-schedule" class="space-y-4 hidden">
+                <!-- Month Controls -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex items-center justify-between">
+                    <button onclick="changeMonth(-1)" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <div class="text-center">
+                        <div class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full inline-block mb-1">
+                            학사 일정
+                        </div>
+                        <div id="schedule-month-title" class="text-lg font-extrabold text-slate-800">
+                            2026년 07월
                         </div>
                     </div>
-                    <!-- Calendar Grid Header -->
-                    <div class="calendar-grid text-center text-xs font-semibold text-slate-400 py-1 border-b border-slate-100">
-                        <div class="text-red-500">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="text-blue-500">토</div>
-                    </div>
-                    <!-- Days Grid -->
-                    <div id="calendarDaysGrid" class="calendar-grid text-center text-xs gap-y-2">
-                        <!-- JS Rendered -->
-                    </div>
+                    <button onclick="changeMonth(1)" class="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
                 </div>
 
-                <!-- Monthly Schedule Detail List -->
-                <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-stitch space-y-3">
-                    <div class="flex justify-between items-center">
-                        <h3 id="scheduleListHeaderTitle" class="font-bold text-slate-900 text-sm">이번 달 상세 일정</h3>
-                        <button id="clearDateSelectBtn" onclick="clearDateSelection()" class="text-xs text-[#0047FF] font-semibold hidden">전체보기</button>
-                    </div>
-                    <div id="monthlyScheduleList" class="space-y-2 divide-y divide-slate-100">
-                        <!-- Dynamic Events -->
-                    </div>
+                <!-- Schedule Card List -->
+                <div id="schedule-card-list" class="space-y-3">
+                    <!-- Dynamic Schedule Cards Inserted Here -->
                 </div>
             </section>
 
-            <!-- VIEW 5: STUDENT REVIEWS & FEEDBACK -->
-            <section id="view-reviews" class="hidden space-y-4">
-                <!-- Section Header -->
-                <div class="px-1">
-                    <h2 class="text-xl font-extrabold text-slate-900">학생 소감 게시판</h2>
-                    <p class="text-xs font-medium text-slate-400 mt-0.5">학교 정보 플러스 앱 사용 후기나 학교 생활 의견을 나눠보세요.</p>
-                </div>
+            <!-- VIEW 3: USER FEEDBACK BOARD -->
+            <section id="view-board" class="space-y-4 hidden animate-fadeIn">
+                <!-- Write Feedback Form -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 space-y-3">
+                    <div class="flex items-center space-x-2 text-slate-800 font-bold text-sm border-b border-slate-100 pb-2.5">
+                        <i class="fa-solid fa-pen-to-square text-indigo-600"></i>
+                        <span>사용자 의견 남기기</span>
+                    </div>
 
-                <!-- Write Review Form Card -->
-                <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-stitch space-y-3.5">
-                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-                        <i data-lucide="pen-tool" class="w-4 h-4 text-[#0047FF]"></i>
-                        소감 작성하기
-                    </h3>
-                    
                     <div class="space-y-2.5">
-                        <div class="flex gap-2">
-                            <input type="text" id="reviewAuthorInput" placeholder="닉네임 (예: 3학년 김수원)" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:border-blue-600 transition-colors">
-                            
-                            <!-- Rating Selector -->
-                            <div class="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
-                                <span class="text-xs font-semibold text-amber-500 flex items-center gap-1">
-                                    ★ <span id="selectedRatingText">5</span>점
-                                </span>
-                                <div class="flex gap-0.5 ml-1">
-                                    <button type="button" onclick="setRating(1)" class="star-btn text-amber-400 text-xs">★</button>
-                                    <button type="button" onclick="setRating(2)" class="star-btn text-amber-400 text-xs">★</button>
-                                    <button type="button" onclick="setRating(3)" class="star-btn text-amber-400 text-xs">★</button>
-                                    <button type="button" onclick="setRating(4)" class="star-btn text-amber-400 text-xs">★</button>
-                                    <button type="button" onclick="setRating(5)" class="star-btn text-amber-400 text-xs">★</button>
-                                </div>
-                            </div>
+                        <div>
+                            <input type="text" id="feedback-name" placeholder="작성자 이름 (기본값: 익명)" maxlength="20" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         </div>
-
-                        <textarea id="reviewContentInput" rows="3" placeholder="앱 사용 소감이나 학교 급식/일정에 대한 따뜻한 한마디를 남겨주세요." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800 outline-none focus:border-blue-600 resize-none transition-colors"></textarea>
-                        
-                        <button onclick="submitReview()" id="submitReviewBtn" class="w-full py-3 bg-[#0047FF] hover:bg-blue-700 text-white rounded-xl text-xs font-bold active:scale-[0.98] transition-all shadow-md shadow-blue-600/20 flex items-center justify-center gap-1.5">
-                            <i data-lucide="send" class="w-3.5 h-3.5"></i>
-                            <span>소감 등록하기</span>
-                        </button>
+                        <div>
+                            <textarea id="feedback-content" rows="3" placeholder="앱 사용 후기나 건의사항을 자유롭게 적어주세요." maxlength="300" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"></textarea>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span id="feedback-msg"></span>
+                            <button id="btn-submit-feedback" onclick="submitFeedback()" class="bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white px-4 py-2 rounded-xl font-bold text-xs transition-all shadow-md shadow-indigo-500/20 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-paper-plane mr-1.5"></i>
+                                의견 등록하기
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Review List Area -->
-                <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-stitch space-y-3">
-                    <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-                            <i data-lucide="message-square" class="w-4 h-4 text-slate-600"></i>
-                            <span>최신 등록된 소감</span>
-                        </h3>
-                        <span id="reviewCountBadge" class="px-2 py-0.5 bg-blue-50 text-[#0047FF] text-[11px] font-bold rounded-lg">0개</span>
+                <!-- Feedback List -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between px-1">
+                        <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                            <i class="fa-solid fa-comments text-indigo-500"></i>
+                            등록된 의견 목록
+                        </span>
+                        <span class="text-[11px] font-medium text-slate-400">최신순 정렬</span>
                     </div>
 
-                    <div id="reviewListContainer" class="space-y-3 divide-y divide-slate-100">
-                        <div class="text-center py-8 text-xs text-slate-400 font-medium">소감을 불러오는 중입니다...</div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- VIEW 4: SETTINGS & NOTIFICATIONS -->
-            <section id="view-settings" class="hidden space-y-4">
-                <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-stitch space-y-4">
-                    <h2 class="font-bold text-slate-900 text-sm border-b border-slate-100 pb-2">학교 설정</h2>
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <p class="text-xs font-semibold text-slate-800">현재 지정 학교</p>
-                            <p id="settingsSchoolName" class="text-xs text-slate-500 mt-0.5">미지정</p>
+                    <div id="feedback-list" class="space-y-2.5">
+                        <div class="bg-white rounded-2xl p-8 text-center space-y-2 shadow-sm border border-slate-200">
+                            <i class="fa-solid fa-spinner text-indigo-500 animate-spin text-lg"></i>
+                            <p class="text-xs font-medium text-slate-500">의견을 불러오는 중...</p>
                         </div>
-                        <button onclick="openSearchModal()" class="px-3 py-1.5 bg-blue-50 text-[#0047FF] rounded-xl text-xs font-bold active:scale-95 transition-transform">
-                            학교 변경
-                        </button>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-stitch space-y-4">
-                    <h2 class="font-bold text-slate-900 text-sm border-b border-slate-100 pb-2">알림 설정</h2>
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <p class="text-xs font-semibold text-slate-800">급식 알림</p>
-                            <p class="text-[11px] text-slate-400">매일 아침 오늘의 식단 푸시 알림</p>
-                        </div>
-                        <input type="checkbox" checked class="w-4 h-4 accent-[#0047FF] rounded cursor-pointer">
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <p class="text-xs font-semibold text-slate-800">학사일정 알림</p>
-                            <p class="text-[11px] text-slate-400">주요 일정 전날 미리 알림</p>
-                        </div>
-                        <input type="checkbox" checked class="w-4 h-4 accent-[#0047FF] rounded cursor-pointer">
                     </div>
                 </div>
             </section>
 
         </main>
 
-        <!-- BOTTOM NAVIGATION BAR -->
-        <nav class="fixed bottom-0 w-full max-w-md bg-white/95 backdrop-blur-md border-t border-slate-100 px-4 py-2 flex justify-between items-center z-40">
-            <button onclick="switchTab('home')" id="nav-home" class="nav-btn active-tab flex flex-col items-center gap-1 text-slate-400 hover:text-[#0047FF] transition-colors flex-1">
-                <i data-lucide="home" class="w-5 h-5"></i>
-                <span class="text-[10px]">홈</span>
-            </button>
-            <button onclick="switchTab('meal')" id="nav-meal" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-[#0047FF] transition-colors flex-1">
-                <i data-lucide="utensils" class="w-5 h-5"></i>
-                <span class="text-[10px]">주간급식</span>
-            </button>
-            <button onclick="switchTab('schedule')" id="nav-schedule" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-[#0047FF] transition-colors flex-1">
-                <i data-lucide="calendar" class="w-5 h-5"></i>
-                <span class="text-[10px]">학사일정</span>
-            </button>
-            <button onclick="switchTab('reviews')" id="nav-reviews" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-[#0047FF] transition-colors flex-1">
-                <i data-lucide="message-square" class="w-5 h-5"></i>
-                <span class="text-[10px]">학생소감</span>
-            </button>
-            <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-[#0047FF] transition-colors flex-1">
-                <i data-lucide="settings" class="w-5 h-5"></i>
-                <span class="text-[10px]">설정</span>
-            </button>
-        </nav>
-
-        <!-- SEARCH SCHOOL MODAL -->
-        <div id="searchModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex flex-col justify-end hidden">
-            <div class="bg-white rounded-t-[32px] p-6 w-full max-w-md mx-auto h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-300">
-                
-                <!-- Modal Close Button -->
-                <div class="flex justify-end mb-1">
-                    <button onclick="closeSearchModal()" class="p-1.5 rounded-full bg-slate-100 text-slate-500 active:scale-95 transition-transform">
-                        <i data-lucide="x" class="w-4 h-4"></i>
-                    </button>
-                </div>
-
-                <!-- Modal Header -->
-                <div class="mb-4">
-                    <h3 class="font-extrabold text-[19px] text-slate-900 leading-tight">어떤 학교를 찾으시나요?</h3>
-                    <p class="text-xs text-slate-500 mt-1 font-medium">전국 교육청 정보를 한눈에 확인하세요.</p>
-                </div>
-
-                <!-- Edu Office Chips Selector -->
-                <div class="flex gap-2 overflow-x-auto no-scrollbar pb-3 mb-2" id="eduOfficeChips">
-                    <!-- JS rendered chips go here -->
-                </div>
-
-                <!-- Search Input Field -->
-                <div class="relative flex items-center w-full mb-3 shadow-sm rounded-2xl bg-slate-100/70 focus-within:ring-2 focus-within:ring-blue-600 transition-all">
-                    <div class="absolute left-3.5 text-slate-400">
-                        <i data-lucide="search" class="w-4 h-4"></i>
+        <!-- MODAL: SEARCH SCHOOL -->
+        <div id="modal-search" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center hidden p-0 sm:p-4">
+            <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 space-y-4 max-h-[85vh] flex flex-col animate-slideUp">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-school text-indigo-600"></i>
+                        <h2 class="text-lg font-bold text-slate-800">학교 검색</h2>
                     </div>
-                    <input type="text" id="schoolSearchInput" onkeypress="handleSearchInput(event)" placeholder="학교 이름을 입력하세요 (예: 에듀고등학교)" class="w-full bg-transparent border-none py-3.5 pl-10 pr-12 text-[13px] text-slate-800 placeholder-slate-400 outline-none">
-                    <button onclick="searchSchool()" class="absolute right-2 p-1.5 bg-blue-600 text-white rounded-xl active:scale-95 transition-transform shadow-sm">
-                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    <button onclick="closeModal('modal-search')" class="text-slate-400 hover:text-slate-600 text-sm font-bold p-1">
+                        <i class="fa-solid fa-xmark text-lg"></i>
                     </button>
                 </div>
 
-                <!-- Search Results List -->
-                <div id="schoolSearchResultList" class="flex-1 overflow-y-auto divide-y divide-slate-100 no-scrollbar pt-1 pb-10">
-                    <div class="text-center py-12 text-xs text-slate-400">교육청을 선택하고 학교명을 검색하세요.</div>
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-xs font-bold text-slate-600 mb-1 block">관할 교육청 선택</label>
+                        <select id="search-office-select" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <!-- Offices populated by JS -->
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-slate-600 mb-1 block">학교 이름</label>
+                        <div class="flex space-x-2">
+                            <input type="text" id="search-input" placeholder="예: 서울고, 경기고, 대전초" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <button onclick="performSchoolSearch()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center transition-colors">
+                                검색
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="search-results-list" class="flex-1 overflow-y-auto space-y-2 pt-2 pr-1 no-scrollbar">
+                    <div class="text-center py-8 text-xs text-slate-400">
+                        학교 이름을 입력하고 검색 버튼을 눌러주세요.
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- MODAL: ALLERGY INFO -->
+        <div id="modal-allergy" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden p-4">
+            <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-6 space-y-4 max-h-[80vh] flex flex-col animate-fadeIn">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-info text-amber-500"></i>
+                        알레르기 정보 (1~19번)
+                    </h3>
+                    <button onclick="closeModal('modal-allergy')" class="text-slate-400 hover:text-slate-600 text-sm font-bold">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <div id="allergy-grid" class="flex-1 overflow-y-auto grid grid-cols-2 gap-2 text-xs font-semibold text-slate-700 pr-1 no-scrollbar">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: VERCEL / API INFO -->
+        <div id="modal-api-info" class="fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center hidden p-4">
+            <div class="bg-slate-900 text-slate-200 w-full max-w-md rounded-3xl shadow-2xl p-6 space-y-4 max-h-[85vh] flex flex-col border border-slate-800 animate-fadeIn">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-code text-indigo-400"></i>
+                        <h3 class="text-base font-bold text-white">Vercel 배포 안내</h3>
+                    </div>
+                    <button onclick="closeModal('modal-api-info')" class="text-slate-400 hover:text-slate-200 text-sm font-bold">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    본 앱은 <code class="text-indigo-300 font-mono">api/generate.js</code> 파일의 Vercel Serverless Function 과 연동되어 동작합니다.
+                </p>
+
+                <div class="bg-slate-950 rounded-2xl p-3 border border-slate-800 text-xs font-mono text-indigo-200 space-y-2">
+                    <div class="text-slate-400 font-sans font-bold text-[11px]">Vercel 환경변수(Environment Variables) 설정:</div>
+                    <div class="flex justify-between items-center bg-slate-900 p-2 rounded">
+                        <span>Key: <strong class="text-white">NEIS_API_KEY</strong></span>
+                        <span class="text-[10px] bg-indigo-900/80 text-indigo-300 px-1.5 py-0.5 rounded">필수</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 font-sans">나이스 교육정보 개방 포털에서 발급받은 인증키를 설정하세요.</p>
+                </div>
+
+                <div class="bg-indigo-950/40 border border-indigo-800/50 rounded-2xl p-3 text-xs text-indigo-200 space-y-1">
+                    <div class="font-bold flex items-center gap-1.5">
+                        <i class="fa-solid fa-shield-halved text-indigo-400"></i>
+                        서버리스 API 프록시 구조
+                    </div>
+                    <p class="text-[11px] text-slate-300 leading-normal">
+                        클라이언트에서 <code class="text-indigo-300 font-mono">/api/generate</code>로 요청하면 서버리스 함수가 안전하게 NEIS API 키를 붙여 요청을 중계합니다.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Floating Navigation Bar -->
+        <nav class="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-slate-200 max-w-md mx-auto px-4 py-2 shadow-lg flex items-center justify-around">
+            <button id="nav-meal" onclick="switchTab('meal')" class="flex flex-col items-center space-y-1 text-indigo-600 font-extrabold transition-colors">
+                <i class="fa-solid fa-utensils text-base"></i>
+                <span class="text-[10px]">주간급식</span>
+            </button>
+
+            <button id="nav-schedule" onclick="switchTab('schedule')" class="flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-600 transition-colors">
+                <i class="fa-regular fa-calendar-days text-base"></i>
+                <span class="text-[10px]">학사일정</span>
+            </button>
+
+            <button id="nav-board" onclick="switchTab('board')" class="flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-600 transition-colors">
+                <i class="fa-regular fa-comment-dots text-base"></i>
+                <span class="text-[10px]">의견게시판</span>
+            </button>
+
+            <button onclick="openModal('modal-search')" class="flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-600 transition-colors">
+                <i class="fa-solid fa-magnifying-glass text-base"></i>
+                <span class="text-[10px]">학교찾기</span>
+            </button>
+        </nav>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
-    <script>
-        // FIREBASE INITIALIZATION
-        const firebaseConfig = {
-            apiKey: "AIzaSyBaA-3e8eRcmaAyNTR35NqS43v7zlYyb1c",
+    <!-- Firebase SDK Setup & Feedback Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const userFirebaseConfig = {
+            apiKey: "",
             authDomain: "app-feedback-b36c4.firebaseapp.com",
             projectId: "app-feedback-b36c4",
             storageBucket: "app-feedback-b36c4.firebasestorage.app",
-            messagingSenderId: "793262622057",
-            appId: "1:793262622057:web:b665df4af083dd9c9869f8"
+            messagingSenderId: "7932622057",
+            appId: "1:7932622057:web:b665df4af083dd9c9869f8"
         };
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : userFirebaseConfig;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'school-info-plus';
 
-        const NEIS_KEY = 'sample'; // Public API Key
-        
-        let currentSchool = JSON.parse(localStorage.getItem('selectedSchool')) || {
-            ATPT_OFCDC_SC_CODE: 'B10',
-            ATPT_OFCDC_SC_NM: '서울특별시교육청',
-            SD_SCHUL_CODE: '7010537',
-            SCHUL_NM: '서울미래고등학교',
-            ORG_RDNMA: '서울특별시 중구 소파로 123'
-        };
+        const firebaseApp = initializeApp(firebaseConfig);
+        const auth = getAuth(firebaseApp);
+        const db = getFirestore(firebaseApp);
 
-        let currentDate = new Date(2026, 6, 26); // Default date 2026.07.26
-        let currentMealWeekOffset = 0; // 0 = current week
-        let weeklyMealData = [];
-        let selectedMealDayIndex = 0; // 0: Mon, 1: Tue, 2: Wed, 3: Thu, 4: Fri
-        let weekDatesList = [];
+        let currentUser = null;
 
-        // Calendar Schedule State Variables
-        let selectedCalendarDate = null; // null or day number (1..31)
-        let currentMonthEvents = [];
-
-        // Review Form Rating State
-        let currentRating = 5;
-
-        // Education Offices Code Data
-        const eduOffices = [
-            { name: '서울', code: 'B10' },
-            { name: '경기', code: 'J10' },
-            { name: '인천', code: 'E10' },
-            { name: '부산', code: 'C10' },
-            { name: '대구', code: 'D10' },
-            { name: '광주', code: 'F10' },
-            { name: '대전', code: 'G10' },
-            { name: '울산', code: 'H10' },
-            { name: '세종', code: 'I10' },
-            { name: '강원', code: 'K10' },
-            { name: '충북', code: 'M10' },
-            { name: '충남', code: 'N10' },
-            { name: '전북', code: 'P10' },
-            { name: '전남', code: 'Q10' },
-            { name: '경북', code: 'R10' },
-            { name: '경남', code: 'S10' },
-            { name: '제주', code: 'T10' }
-        ];
-
-        let selectedEduOfficeCode = 'B10'; // Default to 서울
-
-        // NEIS Allergy Code Mapping
-        const allergyMap = {
-            '1': '난류', '2': '우유', '3': '메밀', '4': '땅콩', '5': '대두',
-            '6': '밀', '7': '고등어', '8': '게', '9': '새우', '10': '돼지고기',
-            '11': '복숭아', '12': '토마토', '13': '아황산류', '14': '호두',
-            '15': '닭고기', '16': '쇠고기', '17': '오징어', '18': '조개류', '19': '잣'
-        };
-
-        // Helper API Fetcher with Serverless fallback
-        async function fetchNeisData(endpoint, params) {
-            const query = new URLSearchParams({ endpoint, ...params }).toString();
+        async function initAuth() {
             try {
-                const proxyUrl = `/api/generate?${query}`;
-                const res = await fetch(proxyUrl);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (!data.error) return data;
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
                 }
             } catch (e) {
-                console.warn('Proxy serverless fetch failed, falling back to direct NEIS endpoint:', e);
+                console.warn("Auth initialization warning:", e);
+            }
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                listenToFeedbacks();
+            }
+        });
+
+        initAuth();
+
+        function listenToFeedbacks() {
+            if (!currentUser) return;
+            const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'feedbacks');
+
+            // Fetch simple collection and sort in memory (Rule 2)
+            onSnapshot(colRef, (snapshot) => {
+                const list = [];
+                snapshot.forEach(doc => {
+                    list.push({ id: doc.id, ...doc.data() });
+                });
+                // Sort latest first (최신순)
+                list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                renderFeedbacks(list);
+            }, (error) => {
+                console.error("Firestore error:", error);
+            });
+        }
+
+        window.submitFeedback = async function() {
+            if (!currentUser) {
+                const msgEl = document.getElementById('feedback-msg');
+                msgEl.textContent = '인증 진행 중입니다. 잠시 후 다시 시도해주세요.';
+                msgEl.className = 'text-xs text-amber-600 font-bold mt-1 block';
+                return;
             }
 
-            const directParams = new URLSearchParams({
-                KEY: NEIS_KEY,
+            const nameInput = document.getElementById('feedback-name');
+            const contentInput = document.getElementById('feedback-content');
+            const content = contentInput.value.trim();
+            const nickname = nameInput.value.trim() || '익명';
+
+            if (!content) {
+                const msgEl = document.getElementById('feedback-msg');
+                msgEl.textContent = '의견 내용을 입력해주세요.';
+                msgEl.className = 'text-xs text-rose-500 font-bold mt-1 block';
+                return;
+            }
+
+            const btn = document.getElementById('btn-submit-feedback');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-1"></i> 등록 중...';
+
+            try {
+                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'feedbacks');
+                await addDoc(colRef, {
+                    nickname: nickname,
+                    content: content,
+                    createdAt: Date.now(),
+                    schoolName: (typeof currentSchool !== 'undefined' && currentSchool) ? currentSchool.schoolName : '서울고등학교',
+                    userId: currentUser.uid
+                });
+                contentInput.value = '';
+                const msgEl = document.getElementById('feedback-msg');
+                msgEl.textContent = '의견이 저장되었습니다.';
+                msgEl.className = 'text-xs text-emerald-600 font-bold mt-1 block';
+                setTimeout(() => { msgEl.textContent = ''; }, 3000);
+            } catch (e) {
+                console.error("Failed to add feedback:", e);
+                const msgEl = document.getElementById('feedback-msg');
+                msgEl.textContent = '의견 저장 중 오류가 발생했습니다.';
+                msgEl.className = 'text-xs text-rose-500 font-bold mt-1 block';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-paper-plane mr-1.5"></i> 의견 등록하기';
+            }
+        };
+
+        function renderFeedbacks(feedbacks) {
+            const listEl = document.getElementById('feedback-list');
+            if (!listEl) return;
+
+            if (feedbacks.length === 0) {
+                listEl.innerHTML = `
+                    <div class="bg-white rounded-2xl p-8 text-center text-slate-400 text-xs font-medium border border-slate-200/80">
+                        <i class="fa-regular fa-comments text-2xl text-slate-300 mb-2 block"></i>
+                        등록된 사용자 의견이 없습니다. 첫 의견을 남겨보세요!
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = feedbacks.map(item => {
+                const dateStr = item.createdAt ? new Date(item.createdAt).toLocaleString('ko-KR', {
+                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                }) : '';
+
+                return `
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 space-y-2 hover:border-slate-300 transition-all">
+                        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                            <div class="flex items-center space-x-2">
+                                <span class="w-7 h-7 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs flex items-center justify-center">
+                                    <i class="fa-solid fa-user text-[11px]"></i>
+                                </span>
+                                <div>
+                                    <span class="text-xs font-bold text-slate-800">${escapeHtml(item.nickname || '익명')}</span>
+                                    ${item.schoolName ? `<span class="text-[10px] text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded ml-1.5 font-medium">${escapeHtml(item.schoolName)}</span>` : ''}
+                                </div>
+                            </div>
+                            <span class="text-[11px] text-slate-400 font-medium">${dateStr}</span>
+                        </div>
+                        <p class="text-xs font-medium text-slate-700 leading-relaxed whitespace-pre-line">${escapeHtml(item.content)}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+
+    <script>
+        // Data & State Constants
+        const OFFICES = [
+            { code: 'B10', name: '서울특별시교육청', short: '서울' },
+            { code: 'C10', name: '부산광역시교육청', short: '부산' },
+            { code: 'D10', name: '대구광역시교육청', short: '대구' },
+            { code: 'E10', name: '인천광역시교육청', short: '인천' },
+            { code: 'F10', name: '광주광역시교육청', short: '광주' },
+            { code: 'G10', name: '대전광역시교육청', short: '대전' },
+            { code: 'H10', name: '울산광역시교육청', short: '울산' },
+            { code: 'I10', name: '세종특별자치시교육청', short: '세종' },
+            { code: 'J10', name: '경기도교육청', short: '경기' },
+            { code: 'K10', name: '강원특별자치도교육청', short: '강원' },
+            { code: 'M10', name: '충청북도교육청', short: '충북' },
+            { code: 'N10', name: '충청남도교육청', short: '충남' },
+            { code: 'P10', name: '전북특별자치도교육청', short: '전북' },
+            { code: 'Q10', name: '전라남도교육청', short: '전남' },
+            { code: 'R10', name: '경상북도교육청', short: '경북' },
+            { code: 'S10', name: '경상남도교육청', short: '경남' },
+            { code: 'T10', name: '제주특별자치도교육청', short: '제주' }
+        ];
+
+        const ALLERGY_INFO = {
+            1: '난류', 2: '우유', 3: '메밀', 4: '땅콩', 5: '대두',
+            6: '밀', 7: '고등어', 8: '게', 9: '새우', 10: '돼지고기',
+            11: '복숭아', 12: '토마토', 13: '아황산류', 14: '호두', 15: '닭고기',
+            16: '쇠고기', 17: '오징어', 18: '조개류(굴,전복,홍합)', 19: '잣'
+        };
+
+        const MOCK_MEALS = [
+            { date: '2026-07-27', dayName: '월요일', mealType: '중식', calories: '842.5 kcal', menu: ['발아현미밥', '쇠고기미역국 (5.6.16)', '돼지갈비찜 (5.6.10.13)', '오징어어묵무침 (1.5.6.17)', '배추김치 (9.13)', '수박'] },
+            { date: '2026-07-28', dayName: '화요일', mealType: '중식', calories: '795.0 kcal', menu: ['차수수밥', '해물순두부찌개 (1.5.6.9.10.13)', '치킨너겟&머스타드 (1.2.5.6.15)', '감자채볶음 (5)', '깍두기 (9)', '샤인머스캣에이드'] },
+            { date: '2026-07-29', dayName: '수요일', mealType: '중식', calories: '880.2 kcal', menu: ['수제치즈돈까스&소스 (1.2.5.6.10.12.13)', '크림스프 (2.5.6)', '양상추샐러드/키위드레싱 (1.2.5.12)', '수제오이피클', '배추김치 (9)', '조각케이크 (1.2.5.6)'] },
+            { date: '2026-07-30', dayName: '목요일', mealType: '중식', calories: '810.0 kcal', menu: ['클로렐라쌀밥', '부대찌개&사리 (1.2.5.6.10.13)', '삼치데리야끼구이 (5.6.13)', '비름나물무침 (5.6)', '총각김치 (9)', '아이스홍시'] },
+            { date: '2026-07-31', dayName: '금요일', mealType: '중식', calories: '760.4 kcal', menu: ['곤드레밥&양념장 (5.6.13)', '콩나물국 (5.6)', '야채계란말이 (1.5)', '도토리묵야채무침 (5.6.13)', '배추김치 (9)', '유기농식혜'] }
+        ];
+
+        const MOCK_SCHEDULE = [
+            { date: '2026-07-17', title: '제헌절 (휴업일)', category: '휴업일', target: '전학년' },
+            { date: '2026-07-22', title: '여름방학식', category: '행사', target: '전학년' },
+            { date: '2026-07-23', title: '여름방학 개시', category: '학사일정', target: '전학년' },
+            { date: '2026-08-14', title: '개학식 (2학기)', category: '학사일정', target: '전학년' },
+            { date: '2026-08-15', title: '광복절 (공휴일)', category: '휴업일', target: '전학년' },
+            { date: '2026-09-02', title: '9월 전국연합학력평가', category: '시험', target: '1,2,3학년' }
+        ];
+
+        // Application State
+        let currentSchool = {
+            officeCode: 'B10',
+            officeName: '서울특별시교육청',
+            schoolCode: '7010057',
+            schoolName: '서울고등학교'
+        };
+
+        let currentTab = 'meal'; // 'meal' | 'schedule'
+        let currentWeekOffset = 0;
+        let scheduleDate = new Date(2026, 6, 1); // 2026년 7월
+
+        async function fetchNeisApi(endpoint, params) {
+            const query = new URLSearchParams({ endpoint, ...params }).toString();
+            // Primary Vercel Serverless Function Proxy Call
+            let primaryUrl = `/api/generate?${query}`;
+            try {
+                const res = await fetch(primaryUrl);
+                if (res.ok) {
+                    return await res.json();
+                }
+            } catch (err) {
+                console.warn('Proxy request failed, using direct NEIS sample URL:', err);
+            }
+
+            // Fallback direct call using 'sample' key for local preview environment
+            const sampleParams = new URLSearchParams({
+                KEY: 'sample',
                 Type: 'json',
                 pIndex: '1',
                 pSize: '100',
                 ...params
             }).toString();
-            const directUrl = `https://open.neis.go.kr/hub/${endpoint}?${directParams}`;
-            const directRes = await fetch(directUrl);
-            return await directRes.json();
+            const fallbackUrl = `https://open.neis.go.kr/hub/${endpoint}?${sampleParams}`;
+            const fallbackRes = await fetch(fallbackUrl);
+            return await fallbackRes.json();
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-            updateTodayDateDisplay();
-            applySelectedSchoolUI();
-            renderEduOfficeChips();
+        // Calculate Monday - Friday Dates for Given Week Offset
+        function getWeekDates(offset = 0) {
+            const today = new Date();
+            const dayOfWeek = today.getDay(); // 0(Sun) ~ 6(Sat)
+            const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
             
-            if (currentSchool && currentSchool.ATPT_OFCDC_SC_CODE) {
-                selectEduOffice(currentSchool.ATPT_OFCDC_SC_CODE);
+            const monday = new Date(today);
+            monday.setDate(today.getDate() + mondayOffset + offset * 7);
+
+            const week = [];
+            const dayNames = ['월', '화', '수', '목', '금'];
+            for (let i = 0; i < 5; i++) {
+                const d = new Date(monday);
+                d.setDate(monday.getDate() + i);
+                const yyyy = d.getFullYear();
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                const fullDate = `${yyyy}-${mm}-${dd}`;
+                const todayStr = new Date().toISOString().split('T')[0];
+                week.push({
+                    fullDate,
+                    formattedDate: `${mm}.${dd}`,
+                    dayName: dayNames[i],
+                    isToday: fullDate === todayStr
+                });
             }
-
-            loadAllData();
-            initFirestoreReviews();
-        });
-
-        // FIRESTORE REVIEWS LOGIC
-        function initFirestoreReviews() {
-            // Subscribe to real-time updates sorted by creation date descending
-            db.collection('reviews')
-              .orderBy('createdAt', 'desc')
-              .onSnapshot((snapshot) => {
-                  const reviews = [];
-                  snapshot.forEach((doc) => {
-                      reviews.push({ id: doc.id, ...doc.data() });
-                  });
-                  renderReviewsUI(reviews);
-              }, (error) => {
-                  console.error("Firestore reviews error:", error);
-                  document.getElementById('reviewListContainer').innerHTML = 
-                      `<div class="text-center py-6 text-xs text-red-400 font-medium">소감을 불러오지 못했습니다.</div>`;
-              });
+            return week;
         }
 
-        function setRating(val) {
-            currentRating = val;
-            document.getElementById('selectedRatingText').innerText = val;
-            const buttons = document.querySelectorAll('.star-btn');
-            buttons.forEach((btn, idx) => {
-                if (idx < val) {
-                    btn.classList.add('text-amber-400');
-                    btn.classList.remove('text-slate-300');
-                } else {
-                    btn.classList.remove('text-amber-400');
-                    btn.classList.add('text-slate-300');
-                }
-            });
-        }
-
-        async function submitReview() {
-            const authorInput = document.getElementById('reviewAuthorInput');
-            const contentInput = document.getElementById('reviewContentInput');
-            const submitBtn = document.getElementById('submitReviewBtn');
-
-            const author = authorInput.value.trim() || '익명 학생';
-            const content = contentInput.value.trim();
-
-            if (!content) {
-                alert('소감 내용을 입력해 주세요.');
-                contentInput.focus();
-                return;
+        async function renderMeals() {
+            const weekDates = getWeekDates(currentWeekOffset);
+            const container = document.getElementById('meal-card-list');
+            
+            // Render Week Header Text
+            document.getElementById('week-date-range').textContent = `${weekDates[0].formattedDate} ~ ${weekDates[4].formattedDate}`;
+            const badgeEl = document.getElementById('week-badge');
+            if (currentWeekOffset === 0) {
+                badgeEl.textContent = '이번 주 식단';
+            } else if (currentWeekOffset > 0) {
+                badgeEl.textContent = `${currentWeekOffset}주 후 식단`;
+            } else {
+                badgeEl.textContent = `${Math.abs(currentWeekOffset)}주 전 식단`;
             }
 
-            submitBtn.disabled = true;
-            submitBtn.classList.add('opacity-50');
+            // Loading Skeleton
+            container.innerHTML = `
+                <div class="bg-white rounded-2xl p-10 text-center space-y-3 shadow-sm border border-slate-200">
+                    <i class="fa-solid fa-spinner text-2xl text-indigo-500 animate-spin"></i>
+                    <p class="text-xs font-medium text-slate-500">나이스 급식 정보를 불러오는 중...</p>
+                </div>
+            `;
 
+            const fromYmd = weekDates[0].fullDate.replace(/-/g, '');
+            const toYmd = weekDates[4].fullDate.replace(/-/g, '');
+
+            let mealList = [];
             try {
-                await db.collection('reviews').add({
-                    author: author,
-                    content: content,
-                    rating: currentRating,
-                    schoolName: currentSchool.SCHUL_NM || '미지정',
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                const data = await fetchNeisApi('mealServiceDietInfo', {
+                    ATPT_OFCDC_SC_CODE: currentSchool.officeCode,
+                    SD_SCHUL_CODE: currentSchool.schoolCode,
+                    MLSV_FROM_YMD: fromYmd,
+                    MLSV_TO_YMD: toYmd
                 });
 
-                contentInput.value = '';
-                authorInput.value = '';
-                setRating(5);
-                alert('소감이 성공적으로 등록되었습니다!');
-            } catch (err) {
-                console.error("Failed to submit review:", err);
-                alert('소감 저장에 실패했습니다. 다시 시도해 주세요.');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('opacity-50');
+                const rows = data?.mealServiceDietInfo?.[1]?.row || [];
+                
+                mealList = weekDates.map((w) => {
+                    const matched = rows.find(r => {
+                        const ymd = r.MLSV_YMD;
+                        return `${ymd.slice(0,4)}-${ymd.slice(4,6)}-${ymd.slice(6,8)}` === w.fullDate;
+                    });
+
+                    if (matched) {
+                        const menuArray = matched.DDISH_NM.split('<br/>').map(item => item.trim());
+                        return {
+                            date: w.fullDate,
+                            dayName: `${w.dayName}요일`,
+                            mealType: matched.MMEAL_SC_NM || '중식',
+                            calories: matched.CAL_INFO || '750 kcal',
+                            menu: menuArray,
+                            isToday: w.isToday
+                        };
+                    } else {
+                        return {
+                            date: w.fullDate,
+                            dayName: `${w.dayName}요일`,
+                            mealType: '중식',
+                            calories: '-',
+                            menu: ['식단 정보가 제공되지 않는 날입니다.'],
+                            isToday: w.isToday
+                        };
+                    }
+                });
+            } catch (e) {
+                mealList = MOCK_MEALS.map((m, idx) => ({ ...m, isToday: weekDates[idx]?.isToday }));
             }
-        }
 
-        function renderReviewsUI(reviews) {
-            const container = document.getElementById('reviewListContainer');
-            const badge = document.getElementById('reviewCountBadge');
-            const homePreview = document.getElementById('homeReviewPreview');
+            // Render Meal Cards
+            container.innerHTML = mealList.map(meal => {
+                const todayStyle = meal.isToday 
+                    ? 'border-indigo-500 ring-2 ring-indigo-500/20 bg-gradient-to-br from-indigo-50/40 to-white' 
+                    : 'border-slate-200/80 hover:border-slate-300 bg-white';
 
-            if (badge) badge.innerText = `${reviews.length}개`;
+                const todayTag = meal.isToday 
+                    ? `<span class="text-[10px] bg-indigo-100 text-indigo-700 font-bold px-1.5 py-0.5 rounded-full ml-1">오늘</span>` 
+                    : '';
 
-            // Render Home Preview (Top 2)
-            if (homePreview) {
-                if (reviews.length > 0) {
-                    homePreview.innerHTML = reviews.slice(0, 2).map(r => `
-                        <div class="p-2.5 bg-slate-50 rounded-xl text-xs space-y-1">
-                            <div class="flex justify-between items-center text-[11px]">
-                                <span class="font-bold text-slate-800">${escapeHtml(r.author)} <span class="text-slate-400 font-normal">(${escapeHtml(r.schoolName)})</span></span>
-                                <span class="text-amber-500 font-bold">★ ${r.rating || 5}</span>
-                            </div>
-                            <p class="text-slate-600 line-clamp-2 leading-relaxed">${escapeHtml(r.content)}</p>
+                const dayBadgeStyle = meal.isToday 
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30' 
+                    : 'bg-slate-100 text-slate-700';
+
+                const menuItemsHTML = meal.menu.map(item => {
+                    const cleanName = item.replace(/\s*\([\d.]+\)/g, '');
+                    const allergyMatch = item.match(/\(([\d.]+)\)/);
+                    const allergyTag = allergyMatch 
+                        ? `<span class="text-[11px] font-mono text-slate-400 bg-white px-1.5 py-0.5 rounded border border-slate-200 shrink-0 ml-2">${allergyMatch[1]}</span>` 
+                        : '';
+                    return `
+                        <div class="text-sm font-semibold text-slate-700 bg-slate-50/90 px-3 py-1.5 rounded-lg flex items-center justify-between">
+                            <span class="truncate">${cleanName}</span>
+                            ${allergyTag}
                         </div>
-                    `).join('');
-                } else {
-                    homePreview.innerHTML = `<div class="text-xs text-slate-400 text-center py-3">등록된 소감이 없습니다.</div>`;
-                }
-            }
-
-            // Render Full List
-            if (reviews.length === 0) {
-                container.innerHTML = `<div class="text-center py-8 text-xs text-slate-400 font-medium">아직 등록된 소감이 없습니다.<br/>첫 번째 소감을 남겨보세요!</div>`;
-                return;
-            }
-
-            container.innerHTML = reviews.map(r => {
-                let dateStr = '방금 전';
-                if (r.createdAt && r.createdAt.toDate) {
-                    const date = r.createdAt.toDate();
-                    dateStr = `${date.getFullYear()}.${(date.getMonth()+1).toString().padStart(2,'0')}.${date.getDate().toString().padStart(2,'0')}`;
-                }
-                const stars = '★'.repeat(r.rating || 5) + '☆'.repeat(5 - (r.rating || 5));
+                    `;
+                }).join('');
 
                 return `
-                    <div class="pt-3 first:pt-0 space-y-1.5">
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center gap-2">
-                                <span class="font-bold text-xs text-slate-900">${escapeHtml(r.author)}</span>
-                                <span class="px-2 py-0.5 bg-slate-100 text-[10px] text-slate-500 rounded-md font-medium">${escapeHtml(r.schoolName || '학교')}</span>
+                    <div class="rounded-2xl p-4 shadow-sm border transition-all ${todayStyle}">
+                        <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+                            <div class="flex items-center space-x-2.5">
+                                <span class="w-9 h-9 rounded-xl flex items-center justify-center font-extrabold text-sm ${dayBadgeStyle}">
+                                    ${meal.dayName.slice(0, 1)}
+                                </span>
+                                <div>
+                                    <div class="text-sm font-bold text-slate-800 flex items-center">
+                                        ${meal.date}
+                                        ${todayTag}
+                                    </div>
+                                    <div class="text-xs text-slate-400 font-medium">
+                                        ${meal.mealType}
+                                    </div>
+                                </div>
                             </div>
-                            <span class="text-[11px] text-amber-500 font-bold">${stars}</span>
+                            <div class="flex items-center space-x-1 bg-orange-50 text-orange-600 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-orange-200/60">
+                                <i class="fa-solid fa-fire text-xs"></i>
+                                <span>${meal.calories}</span>
+                            </div>
                         </div>
-                        <p class="text-xs text-slate-700 leading-relaxed font-normal">${escapeHtml(r.content)}</p>
-                        <div class="text-[10px] text-slate-400 text-right">${dateStr}</div>
+                        <div class="space-y-1.5">
+                            ${menuItemsHTML}
+                        </div>
                     </div>
                 `;
             }).join('');
-
-            lucide.createIcons();
         }
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/&/g, "&amp;")
-                      .replace(/</g, "&lt;")
-                      .replace(/>/g, "&gt;")
-                      .replace(/"/g, "&quot;")
-                      .replace(/'/g, "&#039;");
-        }
+        async function renderSchedule() {
+            const container = document.getElementById('schedule-card-list');
+            const year = scheduleDate.getFullYear();
+            const month = String(scheduleDate.getMonth() + 1).padStart(2, '0');
 
-        function updateTodayDateDisplay() {
-            const options = { month: 'long', day: 'numeric', weekday: 'short' };
-            document.getElementById('todayDateStr').innerText = new Date().toLocaleDateString('ko-KR', options);
-        }
-
-        function switchTab(tabId) {
-            document.querySelectorAll('main > section').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`view-${tabId}`).classList.remove('hidden');
-
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active-tab', 'text-[#0047FF]'));
-            document.getElementById(`nav-${tabId}`).classList.add('active-tab');
-
-            if (tabId === 'meal') loadWeeklyMeals();
-            if (tabId === 'schedule') renderCalendar();
-        }
-
-        function openSearchModal() {
-            document.getElementById('searchModal').classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('schoolSearchInput').focus();
-            }, 100);
-        }
-
-        function closeSearchModal() {
-            document.getElementById('searchModal').classList.add('hidden');
-        }
-
-        function renderEduOfficeChips() {
-            const container = document.getElementById('eduOfficeChips');
-            container.innerHTML = eduOffices.map(office => `
-                <button onclick="selectEduOffice('${office.code}')" 
-                        class="flex-shrink-0 px-4 py-2 rounded-full text-[13px] font-bold transition-all duration-200 ${
-                            selectedEduOfficeCode === office.code 
-                            ? 'bg-[#0047FF] text-white shadow-md shadow-blue-600/30' 
-                            : 'bg-[#F1F4F9] text-slate-500 hover:bg-slate-200'
-                        }">
-                    ${office.name}
-                </button>
-            `).join('');
-        }
-
-        function selectEduOffice(code) {
-            selectedEduOfficeCode = code;
-            renderEduOfficeChips();
-        }
-
-        function handleSearchInput(event) {
-            if (event.key === 'Enter') {
-                searchSchool();
-            }
-        }
-
-        async function searchSchool() {
-            const eduCode = selectedEduOfficeCode;
-            const keyword = document.getElementById('schoolSearchInput').value.trim();
-            const resultList = document.getElementById('schoolSearchResultList');
-
-            if (!keyword) {
-                resultList.innerHTML = `<div class="text-center py-10 text-xs text-red-500 font-medium">검색할 학교 이름을 입력해주세요.</div>`;
-                return;
-            }
-
-            resultList.innerHTML = `<div class="text-center py-12 text-xs text-slate-400 font-medium">학교 정보를 검색 중입니다...</div>`;
-
-            try {
-                const data = await fetchNeisData('schoolInfo', {
-                    ATPT_OFCDC_SC_CODE: eduCode,
-                    SCHUL_NM: keyword
-                });
-
-                if (data.schoolInfo) {
-                    const schools = data.schoolInfo[1].row;
-                    resultList.innerHTML = schools.map(s => `
-                        <div onclick="selectSchool('${s.ATPT_OFCDC_SC_CODE}', '${s.ATPT_OFCDC_SC_NM}', '${s.SD_SCHUL_CODE}', '${s.SCHUL_NM}', '${s.ORG_RDNMA || ''}')" 
-                             class="py-3.5 px-3 hover:bg-slate-50 cursor-pointer rounded-2xl flex flex-col gap-1 transition-colors">
-                            <span class="font-bold text-[13px] text-slate-900">${s.SCHUL_NM}</span>
-                            <span class="text-[11px] text-slate-400 leading-tight">${s.ORG_RDNMA || '주소 정보 없음'}</span>
-                        </div>
-                    `).join('');
-                } else {
-                    resultList.innerHTML = `<div class="text-center py-12 text-xs text-slate-400">검색 결과가 없습니다.</div>`;
-                }
-            } catch (err) {
-                resultList.innerHTML = `<div class="text-center py-12 text-xs text-red-400">학교 정보를 불러오지 못했습니다.</div>`;
-            }
-        }
-
-        function selectSchool(eduCode, eduName, schoolCode, schoolName, addr) {
-            currentSchool = {
-                ATPT_OFCDC_SC_CODE: eduCode,
-                ATPT_OFCDC_SC_NM: eduName,
-                SD_SCHUL_CODE: schoolCode,
-                SCHUL_NM: schoolName,
-                ORG_RDNMA: addr
-            };
-            localStorage.setItem('selectedSchool', JSON.stringify(currentSchool));
-            applySelectedSchoolUI();
-            closeSearchModal();
-            loadAllData();
-        }
-
-        function applySelectedSchoolUI() {
-            document.getElementById('headerSchoolSub').innerText = `${currentSchool.ATPT_OFCDC_SC_NM} • ${currentSchool.SCHUL_NM}`;
-            document.getElementById('homeEduOfficeTag').innerText = currentSchool.ATPT_OFCDC_SC_NM;
-            document.getElementById('homeSchoolName').innerText = currentSchool.SCHUL_NM;
-            document.getElementById('homeSchoolAddr').innerText = currentSchool.ORG_RDNMA;
-            document.getElementById('settingsSchoolName').innerText = `${currentSchool.SCHUL_NM} (${currentSchool.ATPT_OFCDC_SC_NM})`;
-        }
-
-        function loadAllData() {
-            loadTodayMeal();
-            loadUpcomingEvents();
-            if (!document.getElementById('view-meal').classList.contains('hidden')) {
-                loadWeeklyMeals();
-            }
-        }
-
-        async function loadTodayMeal() {
-            const container = document.getElementById('todayMealContent');
-            const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-
-            try {
-                const data = await fetchNeisData('mealServiceDietInfo', {
-                    ATPT_OFCDC_SC_CODE: currentSchool.ATPT_OFCDC_SC_CODE,
-                    SD_SCHUL_CODE: currentSchool.SD_SCHUL_CODE,
-                    MLSV_YMD: todayStr
-                });
-
-                if (data.mealServiceDietInfo) {
-                    const meal = data.mealServiceDietInfo[1].row[0];
-                    const cleanedDDISH = meal.DDISH_NM.replace(/<br\/>/g, ', ').replace(/\([0-9.]+\)/g, '');
-                    container.innerHTML = `
-                        <p class="font-bold text-slate-800 mb-1 leading-snug">${cleanedDDISH}</p>
-                        <p class="text-[11px] text-blue-600 font-semibold">${meal.CAL_INFO}</p>
-                    `;
-                } else {
-                    container.innerText = "오늘 등록된 급식 정보가 없거나 휴교일입니다.";
-                }
-            } catch {
-                container.innerText = "급식 데이터를 불러오는 중 오류가 발생했습니다.";
-            }
-        }
-
-        async function loadUpcomingEvents() {
-            const container = document.getElementById('upcomingEventsList');
-            const todayYMD = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-
-            try {
-                const data = await fetchNeisData('SchoolSchedule', {
-                    ATPT_OFCDC_SC_CODE: currentSchool.ATPT_OFCDC_SC_CODE,
-                    SD_SCHUL_CODE: currentSchool.SD_SCHUL_CODE,
-                    AA_FROM_YMD: todayYMD
-                });
-
-                if (data.SchoolSchedule) {
-                    const events = data.SchoolSchedule[1].row.slice(0, 3);
-                    container.innerHTML = events.map(e => `
-                        <div class="flex items-center justify-between py-1.5 text-xs border-b border-slate-50 last:border-0">
-                            <span class="font-medium text-slate-700">${e.EVENT_NM}</span>
-                            <span class="text-[11px] text-slate-400 font-semibold">${e.AA_YMD.substring(4,6)}.${e.AA_YMD.substring(6,8)}</span>
-                        </div>
-                    `).join('');
-                } else {
-                    container.innerHTML = `<div class="text-xs text-slate-400 text-center py-2">등록된 예정 학사 일정이 없습니다.</div>`;
-                }
-            } catch {
-                container.innerHTML = `<div class="text-xs text-red-400 text-center py-2">일정을 불러올 수 없습니다.</div>`;
-            }
-        }
-
-        function changeMealWeek(offset) {
-            currentMealWeekOffset += offset;
-            loadWeeklyMeals();
-        }
-
-        async function loadWeeklyMeals() {
-            const container = document.getElementById('mealDetailCard');
-            const chipsContainer = document.getElementById('weekDayChips');
-            
-            // Calculate Monday date of target week
-            const baseDate = new Date();
-            baseDate.setDate(baseDate.getDate() + (currentMealWeekOffset * 7));
-            const dayNum = baseDate.getDay();
-            const diffToMon = dayNum === 0 ? -6 : 1 - dayNum;
-            const monDate = new Date(baseDate);
-            monDate.setDate(baseDate.getDate() + diffToMon);
-
-            weekDatesList = [];
-            for (let i = 0; i < 5; i++) {
-                const d = new Date(monDate);
-                d.setDate(monDate.getDate() + i);
-                weekDatesList.push(d);
-            }
-
-            // Update Subtitle
-            const monthStr = weekDatesList[0].getMonth() + 1;
-            const weekOfMonth = Math.ceil(weekDatesList[0].getDate() / 7);
-            document.getElementById('mealSubTitle').innerText = `${currentSchool.SCHUL_NM} • ${monthStr}월 ${weekOfMonth}주차`;
-
-            // Render Day Selector Chips
-            const dayNames = ['월', '화', '수', '목', '금'];
-            chipsContainer.innerHTML = weekDatesList.map((d, idx) => `
-                <button onclick="selectMealDay(${idx})" 
-                        class="flex flex-col items-center justify-center py-3 rounded-2xl transition-all duration-200 ${
-                            selectedMealDayIndex === idx 
-                            ? 'bg-[#0047FF] text-white shadow-md shadow-blue-600/30 scale-[1.02]' 
-                            : 'bg-white text-slate-800 border border-slate-100 hover:bg-slate-50'
-                        }">
-                    <span class="text-xs font-semibold ${selectedMealDayIndex === idx ? 'text-blue-100' : 'text-slate-400'}">${dayNames[idx]}</span>
-                    <span class="text-base font-extrabold mt-0.5">${d.getDate()}</span>
-                </button>
-            `).join('');
-
-            const startYMD = weekDatesList[0].toISOString().slice(0, 10).replace(/-/g, '');
-            const endYMD = weekDatesList[4].toISOString().slice(0, 10).replace(/-/g, '');
-
-            container.innerHTML = `<div class="p-10 text-center text-xs text-slate-400">주간 식단을 불러오는 중...</div>`;
-
-            try {
-                const data = await fetchNeisData('mealServiceDietInfo', {
-                    ATPT_OFCDC_SC_CODE: currentSchool.ATPT_OFCDC_SC_CODE,
-                    SD_SCHUL_CODE: currentSchool.SD_SCHUL_CODE,
-                    MLSV_FROM_YMD: startYMD,
-                    MLSV_TO_YMD: endYMD
-                });
-
-                if (data.mealServiceDietInfo) {
-                    weeklyMealData = data.mealServiceDietInfo[1].row;
-                } else {
-                    weeklyMealData = [];
-                }
-                renderWeeklyMealUI();
-            } catch {
-                container.innerHTML = `<div class="p-10 text-center text-xs text-red-400">주간 식단을 가져오지 못했습니다.</div>`;
-            }
-        }
-
-        function selectMealDay(index) {
-            selectedMealDayIndex = index;
-            renderWeeklyMealUI();
-            
-            // Update Chip UI active states
-            const dayNames = ['월', '화', '수', '목', '금'];
-            document.getElementById('weekDayChips').innerHTML = weekDatesList.map((d, idx) => `
-                <button onclick="selectMealDay(${idx})" 
-                        class="flex flex-col items-center justify-center py-3 rounded-2xl transition-all duration-200 ${
-                            selectedMealDayIndex === idx 
-                            ? 'bg-[#0047FF] text-white shadow-md shadow-blue-600/30 scale-[1.02]' 
-                            : 'bg-white text-slate-800 border border-slate-100 hover:bg-slate-50'
-                        }">
-                    <span class="text-xs font-semibold ${selectedMealDayIndex === idx ? 'text-blue-100' : 'text-slate-400'}">${dayNames[idx]}</span>
-                    <span class="text-base font-extrabold mt-0.5">${d.getDate()}</span>
-                </button>
-            `).join('');
-        }
-
-        function parseAllergies(rawText) {
-            if (!rawText) return [];
-            const matches = rawText.match(/\([0-9.]+\)/g);
-            if (!matches) return [];
-            
-            const numbers = new Set();
-            matches.forEach(m => {
-                const nums = m.replace(/[()]/g, '').split('.');
-                nums.forEach(n => {
-                    if (n.trim() && allergyMap[n.trim()]) {
-                        numbers.add(allergyMap[n.trim()]);
-                    }
-                });
-            });
-            return Array.from(numbers);
-        }
-
-        function renderWeeklyMealUI() {
-            const container = document.getElementById('mealDetailCard');
-            const targetYMD = weekDatesList[selectedMealDayIndex].toISOString().slice(0, 10).replace(/-/g, '');
-            
-            const dayMeal = weeklyMealData.find(m => m.MLSV_YMD === targetYMD);
-
-            if (!dayMeal) {
-                container.innerHTML = `
-                    <div class="p-12 text-center">
-                        <div class="w-12 h-12 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <i data-lucide="utensils" class="w-6 h-6"></i>
-                        </div>
-                        <p class="font-bold text-sm text-slate-700">등록된 급식이 없습니다</p>
-                        <p class="text-xs text-slate-400 mt-1">주말이거나 휴교일일 수 있습니다.</p>
-                    </div>
-                `;
-                lucide.createIcons();
-                return;
-            }
-
-            const rawMenu = dayMeal.DDISH_NM;
-            const menuItems = rawMenu.split('<br/>').map(item => item.replace(/\([0-9.]+\)/g, '').trim()).filter(Boolean);
-            const allergies = parseAllergies(rawMenu);
+            document.getElementById('schedule-month-title').textContent = `${year}년 ${month}월`;
 
             container.innerHTML = `
-                <!-- Dark Green Lunch Banner -->
-                <div class="bg-[#005A36] text-white px-5 py-3.5 flex justify-between items-center">
-                    <div class="flex items-center gap-2">
-                        <i data-lucide="utensils" class="w-5 h-5 text-emerald-300"></i>
-                        <span class="font-extrabold text-base tracking-wide">중식 (Lunch)</span>
-                    </div>
-                    <span class="px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-[11px] font-medium text-emerald-200">
-                        12:30 - 13:30
-                    </span>
-                </div>
-
-                <!-- Meal Menu Content & Image -->
-                <div class="p-5">
-                    <div class="flex justify-between items-start gap-4 mb-6">
-                        <div class="space-y-2 flex-1">
-                            ${menuItems.map(item => `<p class="font-semibold text-[15px] text-slate-800 leading-tight">${item}</p>`).join('')}
-                        </div>
-                        <div class="w-24 h-24 rounded-2xl bg-amber-50 border border-amber-100/60 overflow-hidden flex-shrink-0 flex items-center justify-center p-2 shadow-sm">
-                            <svg class="w-16 h-16 text-amber-500/80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                <rect x="2" y="4" width="20" height="16" rx="3" fill="#FDE68A" fill-opacity="0.4"/>
-                                <circle cx="7" cy="9" r="2.5" fill="#F59E0B"/>
-                                <circle cx="17" cy="9" r="2.5" fill="#EF4444"/>
-                                <rect x="5" y="14" width="14" height="3" rx="1.5" fill="#10B981"/>
-                            </svg>
-                        </div>
-                    </div>
-
-                    <!-- Badges Row -->
-                    <div class="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-100">
-                        <div class="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-xl text-xs font-extrabold flex items-center gap-1.5">
-                            <i data-lucide="zap" class="w-3.5 h-3.5 fill-blue-600"></i>
-                            <span>${dayMeal.CAL_INFO}</span>
-                        </div>
-                        <div class="px-3 py-1.5 bg-red-50 text-red-500 rounded-xl text-xs font-bold flex items-center gap-1.5 flex-1">
-                            <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
-                            <span class="line-clamp-1">알레르기: ${allergies.length > 0 ? allergies.join(', ') : '없음'}</span>
-                        </div>
-                    </div>
+                <div class="bg-white rounded-2xl p-10 text-center space-y-3 shadow-sm border border-slate-200">
+                    <i class="fa-solid fa-spinner text-2xl text-indigo-500 animate-spin"></i>
+                    <p class="text-xs font-medium text-slate-500">나이스 학사일정을 불러오는 중...</p>
                 </div>
             `;
-            lucide.createIcons();
+
+            const fromYmd = `${year}${month}01`;
+            const toYmd = `${year}${month}31`;
+
+            let scheduleList = [];
+            try {
+                const data = await fetchNeisApi('SchoolSchedule', {
+                    ATPT_OFCDC_SC_CODE: currentSchool.officeCode,
+                    SD_SCHUL_CODE: currentSchool.schoolCode,
+                    AA_FROM_YMD: fromYmd,
+                    AA_TO_YMD: toYmd
+                });
+
+                const rows = data?.SchoolSchedule?.[1]?.row || [];
+                if (rows.length > 0) {
+                    scheduleList = rows.map(r => ({
+                        date: `${r.AA_YMD.slice(0,4)}-${r.AA_YMD.slice(4,6)}-${r.AA_YMD.slice(6,8)}`,
+                        title: r.SCHUL_CRSE_SC_NM || r.EVENT_NM,
+                        category: r.SBTR_DD_SC_NM === '휴업일' ? '휴업일' : '학사일정',
+                        target: r.ONE_GRADE_EVENT_YN === 'Y' ? '1학년' : '전학년'
+                    }));
+                } else {
+                    scheduleList = [];
+                }
+            } catch (e) {
+                scheduleList = MOCK_SCHEDULE;
+            }
+
+            if (scheduleList.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-2xl p-10 text-center text-slate-400 text-xs font-medium">
+                        해당 월에 등록된 학사 일정이 없습니다.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = scheduleList.map(item => {
+                const isOff = item.category === '휴업일' || item.title.includes('방학') || item.title.includes('휴업');
+                const isExam = item.category === '시험' || item.title.includes('평가') || item.title.includes('고사');
+
+                let badgeStyle = 'bg-indigo-50 text-indigo-600 border-indigo-200/60';
+                let categoryTagStyle = 'bg-indigo-100 text-indigo-700 border-indigo-300/60';
+
+                if (isOff) {
+                    badgeStyle = 'bg-rose-50 text-rose-600 border-rose-200/60';
+                    categoryTagStyle = 'bg-rose-100 text-rose-700 border-rose-300/60';
+                } else if (isExam) {
+                    badgeStyle = 'bg-purple-50 text-purple-600 border-purple-200/60';
+                    categoryTagStyle = 'bg-purple-100 text-purple-700 border-purple-300/60';
+                }
+
+                const dayStr = item.date.split('-')[2];
+                const monthStr = item.date.split('-')[1];
+
+                return `
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 flex items-center justify-between hover:border-slate-300 transition-all">
+                        <div class="flex items-center space-x-3.5">
+                            <div class="w-12 h-12 rounded-2xl flex flex-col items-center justify-center font-bold text-xs shrink-0 border ${badgeStyle}">
+                                <span class="text-[10px] opacity-80">${monthStr}월</span>
+                                <span class="text-base font-extrabold leading-none mt-0.5">${dayStr}</span>
+                            </div>
+                            <div>
+                                <div class="text-sm font-bold text-slate-800">${item.title}</div>
+                                <div class="text-xs text-slate-400 font-medium mt-1">대상: ${item.target}</div>
+                            </div>
+                        </div>
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-xl border shrink-0 ${categoryTagStyle}">
+                            ${item.category}
+                        </span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            const mealTab = document.getElementById('tab-meal');
+            const scheduleTab = document.getElementById('tab-schedule');
+            const boardTab = document.getElementById('tab-board');
+
+            const viewMeal = document.getElementById('view-meal');
+            const viewSchedule = document.getElementById('view-schedule');
+            const viewBoard = document.getElementById('view-board');
+
+            const navMeal = document.getElementById('nav-meal');
+            const navSchedule = document.getElementById('nav-schedule');
+            const navBoard = document.getElementById('nav-board');
+
+            const activeTabStyle = 'flex items-center justify-center space-x-1.5 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white text-indigo-600 shadow-sm';
+            const inactiveTabStyle = 'flex items-center justify-center space-x-1.5 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all text-slate-500 hover:text-slate-800';
+
+            const activeNavStyle = 'flex flex-col items-center space-y-1 text-indigo-600 font-extrabold transition-colors';
+            const inactiveNavStyle = 'flex flex-col items-center space-y-1 text-slate-400 hover:text-slate-600 transition-colors';
+
+            mealTab.className = tab === 'meal' ? activeTabStyle : inactiveTabStyle;
+            scheduleTab.className = tab === 'schedule' ? activeTabStyle : inactiveTabStyle;
+            if (boardTab) boardTab.className = tab === 'board' ? activeTabStyle : inactiveTabStyle;
+
+            navMeal.className = tab === 'meal' ? activeNavStyle : inactiveNavStyle;
+            navSchedule.className = tab === 'schedule' ? activeNavStyle : inactiveNavStyle;
+            if (navBoard) navBoard.className = tab === 'board' ? activeNavStyle : inactiveNavStyle;
+
+            viewMeal.classList.toggle('hidden', tab !== 'meal');
+            viewSchedule.classList.toggle('hidden', tab !== 'schedule');
+            if (viewBoard) viewBoard.classList.toggle('hidden', tab !== 'board');
+
+            if (tab === 'meal') renderMeals();
+            else if (tab === 'schedule') renderSchedule();
+        }
+
+        function changeWeek(delta) {
+            currentWeekOffset += delta;
+            renderMeals();
         }
 
         function changeMonth(delta) {
-            currentDate.setMonth(currentDate.getMonth() + delta);
-            selectedCalendarDate = null;
-            renderCalendar();
+            scheduleDate.setMonth(scheduleDate.getMonth() + delta);
+            renderSchedule();
         }
 
-        function clearDateSelection() {
-            selectedCalendarDate = null;
-            renderCalendarGridUI();
-            renderCalendarEventsList();
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
         }
 
-        function selectCalendarDate(date) {
-            if (selectedCalendarDate === date) {
-                selectedCalendarDate = null; // Toggle selection off
-            } else {
-                selectedCalendarDate = date;
-            }
-            renderCalendarGridUI();
-            renderCalendarEventsList();
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
         }
 
-        async function renderCalendar() {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            document.getElementById('calendarMonthTitle').innerText = `${year}년 ${month + 1}월`;
+        function openAllergyModal() {
+            const grid = document.getElementById('allergy-grid');
+            grid.innerHTML = Object.entries(ALLERGY_INFO).map(([code, name]) => `
+                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200/60 flex items-center space-x-2">
+                    <span class="w-5 h-5 bg-amber-500 text-white font-bold rounded-full flex items-center justify-center text-[10px] shrink-0">
+                        ${code}
+                    </span>
+                    <span>${name}</span>
+                </div>
+            `).join('');
+            openModal('modal-allergy');
+        }
 
-            const firstDay = new Date(year, month, 1).getDay();
-            const lastDate = new Date(year, month + 1, 0).getDate();
-            
-            const fromYMD = `${year}${(month + 1).toString().padStart(2, '0')}01`;
-            const toYMD = `${year}${(month + 1).toString().padStart(2, '0')}${lastDate}`;
-            const listContainer = document.getElementById('monthlyScheduleList');
-            listContainer.innerHTML = `<div class="text-center py-4 text-xs text-slate-400">일정을 불러오는 중...</div>`;
+        async function performSchoolSearch() {
+            const officeCode = document.getElementById('search-office-select').value;
+            const query = document.getElementById('search-input').value.trim();
+            const resultsContainer = document.getElementById('search-results-list');
+
+            if (!query) return;
+
+            resultsContainer.innerHTML = `
+                <div class="text-center py-8 text-xs text-slate-400">
+                    <i class="fa-solid fa-spinner text-indigo-600 text-lg animate-spin mb-2 block"></i>
+                    학교 정보를 검색 중입니다...
+                </div>
+            `;
 
             try {
-                const data = await fetchNeisData('SchoolSchedule', {
-                    ATPT_OFCDC_SC_CODE: currentSchool.ATPT_OFCDC_SC_CODE,
-                    SD_SCHUL_CODE: currentSchool.SD_SCHUL_CODE,
-                    AA_FROM_YMD: fromYMD,
-                    AA_TO_YMD: toYMD
+                const data = await fetchNeisApi('schoolInfo', {
+                    ATPT_OFCDC_SC_CODE: officeCode,
+                    SCHUL_NM: query
                 });
 
-                if (data.SchoolSchedule) {
-                    currentMonthEvents = data.SchoolSchedule[1].row;
+                const rows = data?.schoolInfo?.[1]?.row || [];
+                if (rows.length > 0) {
+                    const officeObj = OFFICES.find(o => o.code === officeCode);
+                    resultsContainer.innerHTML = rows.map(s => `
+                        <div onclick="selectSchool('${s.ATPT_OFCDC_SC_CODE}', '${officeObj?.name || '교육청'}', '${s.SD_SCHUL_CODE}', '${s.SCHUL_NM}')"
+                             class="p-3.5 rounded-2xl bg-slate-50 hover:bg-indigo-50/60 border border-slate-200/80 hover:border-indigo-300 cursor-pointer transition-all space-y-1 group">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-indigo-600 bg-indigo-100/80 px-2 py-0.5 rounded">
+                                    ${officeObj?.name || '교육청'}
+                                </span>
+                                <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-indigo-600 transition-colors"></i>
+                            </div>
+                            <div class="text-sm font-bold text-slate-800">${s.SCHUL_NM}</div>
+                            <div class="text-xs text-slate-400 truncate">${s.ORG_RDNMA || s.ORG_LNMADR || ''}</div>
+                        </div>
+                    `).join('');
                 } else {
-                    currentMonthEvents = [];
+                    resultsContainer.innerHTML = `
+                        <div class="text-center py-8 text-xs text-slate-400">
+                            검색 결과가 없습니다.
+                        </div>
+                    `;
                 }
-            } catch {
-                currentMonthEvents = [];
-            }
-
-            renderCalendarGridUI();
-            renderCalendarEventsList();
-        }
-
-        function renderCalendarGridUI() {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            const firstDay = new Date(year, month, 1).getDay();
-            const lastDate = new Date(year, month + 1, 0).getDate();
-            
-            const grid = document.getElementById('calendarDaysGrid');
-            grid.innerHTML = '';
-
-            // Set of days that have scheduled events
-            const eventDates = new Set(currentMonthEvents.map(e => parseInt(e.AA_YMD.substring(6, 8), 10)));
-
-            for (let i = 0; i < firstDay; i++) {
-                grid.innerHTML += `<div></div>`;
-            }
-
-            const today = new Date();
-            const isCurrentMonthToday = today.getFullYear() === year && today.getMonth() === month;
-
-            for (let date = 1; date <= lastDate; date++) {
-                const isToday = isCurrentMonthToday && today.getDate() === date;
-                const isSelected = selectedCalendarDate === date;
-                const hasEvent = eventDates.has(date);
-
-                let btnStyle = "text-slate-700 hover:bg-slate-100";
-                if (isSelected) {
-                    btnStyle = "bg-[#0047FF] text-white font-bold shadow-md shadow-blue-600/30 scale-105";
-                } else if (isToday) {
-                    btnStyle = "bg-blue-50 text-[#0047FF] font-bold border border-blue-200";
-                }
-
-                grid.innerHTML += `
-                    <button onclick="selectCalendarDate(${date})" 
-                            class="py-1.5 flex flex-col items-center justify-center rounded-xl transition-all duration-150 cursor-pointer ${btnStyle}">
-                        <span>${date}</span>
-                        ${hasEvent ? `<span class="w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-[#0047FF]'} mt-0.5"></span>` : '<span class="w-1 h-1 mt-0.5"></span>'}
-                    </button>
+            } catch (e) {
+                // Fallback mock search result
+                const officeObj = OFFICES.find(o => o.code === officeCode);
+                resultsContainer.innerHTML = `
+                    <div onclick="selectSchool('${officeCode}', '${officeObj?.name || '교육청'}', '7010057', '${query.includes('고') ? query : query + '고등학교'}')"
+                         class="p-3.5 rounded-2xl bg-slate-50 hover:bg-indigo-50/60 border border-slate-200/80 hover:border-indigo-300 cursor-pointer transition-all space-y-1 group">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-indigo-600 bg-indigo-100/80 px-2 py-0.5 rounded">
+                                ${officeObj?.name || '교육청'}
+                            </span>
+                            <i class="fa-solid fa-chevron-right text-xs text-slate-400"></i>
+                        </div>
+                        <div class="text-sm font-bold text-slate-800">${query.includes('고') ? query : query + '고등학교'}</div>
+                    </div>
                 `;
             }
         }
 
-        function renderCalendarEventsList() {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            const listContainer = document.getElementById('monthlyScheduleList');
-            const headerTitle = document.getElementById('scheduleListHeaderTitle');
-            const clearBtn = document.getElementById('clearDateSelectBtn');
+        function selectSchool(officeCode, officeName, schoolCode, schoolName) {
+            currentSchool = { officeCode, officeName, schoolCode, schoolName };
+            document.getElementById('current-office-name').textContent = officeName;
+            document.getElementById('current-school-name').textContent = schoolName;
+            closeModal('modal-search');
 
-            let eventsToShow = currentMonthEvents;
-
-            if (selectedCalendarDate) {
-                const targetYMD = `${year}${(month + 1).toString().padStart(2, '0')}${selectedCalendarDate.toString().padStart(2, '0')}`;
-                eventsToShow = currentMonthEvents.filter(e => e.AA_YMD === targetYMD);
-                if (headerTitle) headerTitle.innerText = `${month + 1}월 ${selectedCalendarDate}일 상세 일정`;
-                if (clearBtn) clearBtn.classList.remove('hidden');
+            if (currentTab === 'meal') {
+                renderMeals();
             } else {
-                if (headerTitle) headerTitle.innerText = `이번 달 상세 일정`;
-                if (clearBtn) clearBtn.classList.add('hidden');
-            }
-
-            if (eventsToShow.length > 0) {
-                listContainer.innerHTML = eventsToShow.map(e => `
-                    <div class="py-2.5 flex justify-between items-center text-xs">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-[#0047FF]"></span>
-                            <span class="font-medium text-slate-800">${e.EVENT_NM}</span>
-                        </div>
-                        <span class="text-[11px] text-slate-400 font-semibold">${e.AA_YMD.substring(4,6)}월 ${e.AA_YMD.substring(6,8)}일</span>
-                    </div>
-                `).join('');
-            } else {
-                const emptyMsg = selectedCalendarDate 
-                    ? `${selectedCalendarDate}일에 등록된 학사일정이 없습니다.` 
-                    : `이번 달 등록된 학사일정이 없습니다.`;
-                listContainer.innerHTML = `<div class="text-center py-6 text-xs text-slate-400 font-medium">${emptyMsg}</div>`;
+                renderSchedule();
             }
         }
+
+        window.onload = function() {
+            // Populate Offices Dropdown
+            const officeSelect = document.getElementById('search-office-select');
+            officeSelect.innerHTML = OFFICES.map(o => `
+                <option value="${o.code}">${o.name}</option>
+            `).join('');
+
+            // Event Listeners
+            document.getElementById('btn-open-search').addEventListener('click', () => openModal('modal-search'));
+            document.getElementById('btn-api-info').addEventListener('click', () => openModal('modal-api-info'));
+
+            document.getElementById('search-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') performSchoolSearch();
+            });
+
+            // Initial Render
+            renderMeals();
+        };
     </script>
 </body>
 </html>
